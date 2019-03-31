@@ -26,11 +26,10 @@ self.addEventListener('install', function (e) {
                 '/manifest.json',
                 '/english.json',
                 '/sacred.json',
-                '/node_modules/onsenui/css/font-awesome/css/v4-shims.min.css',
-                '/node_modules/onsenui/css/onsenui.css',
-                '/node_modules/onsenui/css/onsen-css-components.min.css',
-                '/node_modules/onsenui/js/onsenui.min.js',                
-                '/node_modules/jquery/dist/jquery.min.js'               
+                'https://unpkg.com/onsenui/css/onsenui.css',
+                'https://unpkg.com/onsenui/css/onsen-css-components.min.css',
+                'https://unpkg.com/onsenui/js/onsenui.min.js',
+                'https://unpkg.com/jquery/dist/jquery.min.js'             
             ].concat(bible_data));
         })
     );
