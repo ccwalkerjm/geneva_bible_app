@@ -1,0 +1,31 @@
+#chapter {
+    margin: 5px;
+    padding: 2px
+}
+
+
+.verse {
+    display: inline-block;   
+    font-weight: bold;
+}
+
+.verse:before {
+    content: ""
+}
+
+.link-note{
+    font-size: xx-small
+}
+
+.copyright {
+    font-size: small;
+    position: absolute;left: 50%;transform: translate(-50%);
+}
+
+span.modal-book-name {
+    margin-left: 10px;
+}
+
+ons-action-sheet {
+    font-size: xx-small
+}

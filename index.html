@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="jm-en">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Adaptable Geneva Bible</title>
+  <meta name="description" content="Adaptable Geneva Bible 1599 in Old or Modern English, Sacred or English Names." />
+  <meta name="keywords" content="Christian, Bible, GNV, Geneva, 1599, Modern English" />
+  <meta name="theme-color" content="#EF4E2A" />
+  <link rel="icon" type="image/png" href="/images/logo32.png" sizes="32x32" />
+  <link rel="icon" type="image/png" href="/images/logo16.png" sizes="16x16" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/node_modules/onsenui/css/onsenui.css" />
+  <link rel="stylesheet" href="/node_modules/onsenui/css/onsen-css-components.min.css" />
+  <link rel="stylesheet" href="/index.css" />
+  <script src="/node_modules/onsenui/js/onsenui.min.js"></script>
+  <script src="/node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="/index.js"></script>
+
+</head>
+
+<body>
+  <ons-page>
+    <ons-toolbar>
+      <div class="left">
+        <ons-toolbar-button modifier="material outline" onclick="showOptions()">
+          <ons-icon icon="md-menu"></ons-icon>
+        </ons-toolbar-button>
+      </div>
+      <div class="center">
+        <ons-toolbar-button id="book-selector" modifier="material outline">
+            <span class="link-note">Click to Change Book--></span><span class="text"></span>
+        </ons-toolbar-button>
+        <ons-toolbar-button id="chapter-selector" modifier="material outline">
+            <span class="text"></span><span class="link-note"><--Click to Change Chapter</span>
+        </ons-toolbar-button>
+      </div>
+      <div class="right">
+        <ons-toolbar-button onclick="window.close()" modifier="material outline">
+          <ons-icon icon="md-close-circle"></ons-icon>
+        </ons-toolbar-button>
+      </div>
+    </ons-toolbar>   
+    <div id="chapter"></div>
+    <ons-bottom-toolbar modifier="aligned">
+      <div style="text-align: center">
+        <ons-toolbar-button id="previous-chapter" style="position: absolute; left: 10px;" modifier="material outline">
+          <ons-icon icon="md-arrow-left"></ons-icon>&nbsp;<span class="link-note">Previous Chapter</span>
+        </ons-toolbar-button>
+        <span class="copyright">
+         &copy;2019 Courtney Walker
+        </span>
+        <ons-toolbar-button id="next-chapter" style="position: absolute; right: 10px;" modifier="material outline">
+          <span class="link-note">Next Chapter</span>&nbsp;<ons-icon icon="md-arrow-right"></ons-icon>
+        </ons-toolbar-button>
+      </div>
+    </ons-bottom-toolbar>
+  </ons-page>
+
+  <ons-modal id="bible-selection-modal" direction="up">
+    <ons-page>
+      <ons-toolbar>
+        <div class="left">
+          <span class="modal-book-name"></span>
+        </div>
+        <div class="center">
+            <span class="modal-title"></span>
+        </div>
+        <div class="right">
+          <ons-toolbar-button onclick="returnModal()" modifier="material outline">
+            <ons-icon icon="md-long-arrow-return"></ons-icon>
+          </ons-toolbar-button>
+        </div>
+      </ons-toolbar>
+      <!-- <ons-list-title modifier="material">Select Book</ons-list-title> -->
+      <ons-list id="book-list"></ons-list>
+      <ons-list id="chapter-list" style="display:none"></ons-list>
+    </ons-page>
+  </ons-modal>
+
+<!--loader---->
+  <ons-modal id="loader" direction="up">
+      <div style="position: absolute;left: 50%;top:50%;transform: translate(-50%,-50%);">
+          <p>...Downloading Bible Data..</p>
+          <ons-progress-bar indeterminate="true"></ons-progress-bar>
+      </div>
+    </ons-modal>
+
+</body>
+
+</html>
