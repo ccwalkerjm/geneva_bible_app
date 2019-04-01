@@ -27,9 +27,9 @@ self.addEventListener('install', function (e) {
                 'english.json',
                 'sacred.json',
                 'https://unpkg.com/onsenui/css/onsenui.css',
-                'https://unpkg.com/onsenui/css/onsen-css-components.min.css',
-                'https://unpkg.com/onsenui/js/onsenui.min.js',
-                'https://unpkg.com/jquery/dist/jquery.min.js'
+                'https://unpkg.com/onsenui/css/onsen-css-components.css',
+                'https://unpkg.com/onsenui/js/onsenui.js',
+                'https://unpkg.com/jquery/dist/jquery.js'
             ].concat(bible_data));
         })
     );
