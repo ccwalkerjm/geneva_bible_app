@@ -1,10 +1,14 @@
 # Geneva Bible App
-This is a simple Bible App based on the Geneva Version. It uses the new Progessive Web App Standard so that it can easily work on any device whether Android, IoS or any Desktop or Laptop.  It must run on any Browser that supports PWA including Chrome and Firefox.
+This is a simple Bible App based on the Geneva Version.
 
-Geneva Bible was translated in 1590 so the English is very outdated. Nevertheless it is still an excellent Bible.  To make the Bible more adaptable we make it possible to switch between Old English and Modern Emglish and Between Sacred Names and Standard English Names. The user can easily switch to any mode. We use a programmable method for the switching.  The original Genvea Data is unchanged.  
+The App is a Progressive Web Application which allows you to convert the web site to a local App on your device. While it loads like a website it allows you to use it offline just like a normal app. PWAs combine the flexibility of the web with the experience of a native application. You can learn more about PWA at this site https://en.wikipedia.org/wiki/Progressive_web_applications. 
 
-Users can contribute freely. As you read the Bible you can suggest words that can be modernized. You are also free to upload your json dictionary with new conversions.  Once we are satified we will commit the changes.  
+The last edition of the Original Geneva Bible was translated in 1599 so the English is very outdated. Nevertheless it is an excellent Bible that is easy to understand. 
 
-I decided to the proejct because I wanted a fairly pure English version.  You can read more about the Geneva from Wikpedia and other sources.  
+This project aims to allow users to switch between Old English and Modern Emglish and between Sacred Names and Standard English Names. The user can easily switch to any mode. We use a programmable method for the switching without tampering with the actual Bible Data.  
+
+Users can contribute freely. As you read the Bible you can suggest words that can be modernized. You are also free to modify the  json files that have the conversions between the old english words and the modern english words; and between the sacred names and the standard english names. You can also contribute freely to the improvement of the app.  Once we are satified, we will commit the changes.  
+
+I decided to do the project because I wanted a pure English Bible version that wasn't sanctioned by any King or questionable organisation.  You can read more about the Geneva from Wikipedia here https://en.wikipedia.org/wiki/Geneva_Bible.   
 
 To run the app simply click this link https://ccwalkerjm.github.io/geneva_bible_app/
