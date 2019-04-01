@@ -12,3 +12,5 @@ Users can contribute freely. As you read the Bible you can suggest words that ca
 I decided to do the project because I wanted a pure English Bible version that wasn't sanctioned by any King or questionable organisation.  You can read more about the Geneva from Wikipedia here https://en.wikipedia.org/wiki/Geneva_Bible.   
 
 To run the app simply click this link https://ccwalkerjm.github.io/geneva_bible_app/
+
+I should add that there is a modern english version of the Geneva Bible but it is not in the Public Domain.  
