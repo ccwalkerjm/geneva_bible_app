@@ -347,7 +347,7 @@ function returnModal() {
 function load_service_worker() {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker
-      .register("/sw.js")
+      .register("sw.js")
       .then(function () {
         console.log("Service Worker Registered");
       })
