@@ -2,7 +2,7 @@
     "heauen" : "heaven",
     "beholde" :"behold",
     "sonne":"son",
-    "Dauid":"David",
+    "dauid":"david",
     "Iacob":"Jacob",
     "Iesse":"Jesse",
     "Ioseph":"Joseph",
@@ -25,5 +25,10 @@
     "Iudea":"Judea",
     "Beth-leem":"Bethlehem",
     "beloued":"beloved",
-    "voyce":"voice"
+    "voyce":"voice",
+    "booke":"book",
+    "begate":"begat",
+    "iudas":"judah",
+    "childe":"child",
+    "inioyned" :"beseeched"
 }
