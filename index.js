@@ -62,35 +62,10 @@ function getOptions() {
 
 String.prototype.replaceAll = function(search, replacement) {
   //const target = this;
-  return this.replace(new RegExp("(" + search + ")", "g"), replacement);
+  const regex = new RegExp('\\b' + search + '\\b', "g");
+  return this.replace(regex, replacement);
 };
 
-// Find, Replace, Case
-String.prototype.replaceAll2 = function(_f, _r, _c) {
-  var o = this.toString();
-  var r = "";
-  var s = o;
-  var b = 0;
-  var e = -1;
-  if (_c) {
-    _f = _f.toLowerCase();
-    s = o.toLowerCase();
-  }
-
-  while ((e = s.indexOf(_f)) > -1) {
-    r += o.substring(b, b + e) + _r;
-    s = s.substring(e + _f.length, s.length);
-    b += e + _f.length;
-  }
-
-  // Add Leftover
-  if (s.length > 0) {
-    r += o.substring(o.length - s.length, o.length);
-  }
-
-  // Return New String
-  return r;
-};
 //
 
 function setEasyMode() {
@@ -202,6 +177,36 @@ function get_next_chapter() {
   selectBook(_book_index, _chapter_index);
 }
 
+function replaceBiggestFirst(xtext, translationList) {
+  let transformed_arr = [];
+  for (let key in translationList) {
+    transformed_arr.push({
+      old: key,
+      new: translationList[key]
+    });
+  }
+  //arrange with biggest first
+  transformed_arr.sort((a, b) => b.old.length - a.old.length);
+  console.log("sizes", transformed_arr);
+  for (let i = 0; i < transformed_arr.length; i++) {
+    xtext = xtext.replaceAll(transformed_arr[i].old, transformed_arr[i].new);
+  }
+  return xtext;
+}
+
+function translate(chapterText) {
+  //change to modern words
+  if (!_m_opts[_m_opts_english].status) {
+    chapterText = replaceBiggestFirst(chapterText, _englishWords);
+
+    //_sacredWords
+    if (!_m_opts[_m_opts_sacred].status) {
+      chapterText = replaceBiggestFirst(chapterText, _sacredWords);
+    }
+  }
+  return chapterText;
+}
+
 //select Chapter
 function selectChapter(index) {
   _chapter_index = index || 0; //_chapter_index;
@@ -213,23 +218,15 @@ function selectChapter(index) {
 
   let chapterText = atob(encoded_text);
 
-  //change to modern words
-  if (!_m_opts[_m_opts_english].status)
-    for (let key in _englishWords) {
-      chapterText = chapterText.replaceAll(key, _englishWords[key]);
-    }
-
-  //_sacredWords
-  if (!_m_opts[_m_opts_sacred].status)
-    for (let key in _sacredWords) {
-      chapterText = chapterText.replaceAll(key, _sacredWords[key]);
-    }
+  chapterText = translate(chapterText);
 
   $("#chapter").html(chapterText);
-  if ($bibleModal.visible)
+
+  if ($bibleModal.visible) {
     $bibleModal.hide({
       animation: "fade"
     });
+  }
 }
 
 //select Book
