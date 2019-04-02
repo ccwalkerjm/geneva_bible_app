@@ -19,7 +19,7 @@
 
 </head>
 
-<body>
+  <body>
   <ons-page>
     <ons-toolbar>
       <div class="left">
@@ -29,28 +29,26 @@
       </div>
       <div class="center">
         <ons-toolbar-button id="book-selector" modifier="material outline">
-            <span class="link-note">Click to Change Book--></span><span class="text"></span>
+          <span class="link-note">Click to Change Book--></span><span class="text"></span>
         </ons-toolbar-button>
         <ons-toolbar-button id="chapter-selector" modifier="material outline">
-            <span class="text"></span><span class="link-note"><--Click to Change Chapter</span>
-        </ons-toolbar-button>
+          <span class="text"></span><span class="link-note">
+            <--Click to Change Chapter</span> </ons-toolbar-button> </div> <div class="right">
+              <ons-toolbar-button onclick="window.close()" modifier="material outline">
+                <ons-icon icon="md-close-circle"></ons-icon>
+              </ons-toolbar-button>
       </div>
-      <div class="right">
-        <ons-toolbar-button onclick="window.close()" modifier="material outline">
-          <ons-icon icon="md-close-circle"></ons-icon>
-        </ons-toolbar-button>
-      </div>
-    </ons-toolbar>   
+    </ons-toolbar>
     <div id="chapter"></div>
     <ons-bottom-toolbar modifier="aligned">
       <div style="text-align: center">
-        <ons-toolbar-button id="previous-chapter" style="position: absolute; left: 10px;" modifier="material outline">
+        <ons-toolbar-button id="previous-chapter" onclick="get_previous_chapter()" style="position: absolute; left: 10px;" modifier="material outline">
           <ons-icon icon="md-arrow-left"></ons-icon>&nbsp;<span class="link-note">Previous Chapter</span>
         </ons-toolbar-button>
         <span class="copyright">
-         &copy;2019 Courtney Walker
+          &copy;2019 Courtney Walker
         </span>
-        <ons-toolbar-button id="next-chapter" style="position: absolute; right: 10px;" modifier="material outline">
+        <ons-toolbar-button id="next-chapter" onclick="get_next_chapter()" style="position: absolute; right: 10px;" modifier="material outline">
           <span class="link-note">Next Chapter</span>&nbsp;<ons-icon icon="md-arrow-right"></ons-icon>
         </ons-toolbar-button>
       </div>
@@ -64,7 +62,7 @@
           <span class="modal-book-name"></span>
         </div>
         <div class="center">
-            <span class="modal-title"></span>
+          <span class="modal-title"></span>
         </div>
         <div class="right">
           <ons-toolbar-button onclick="returnModal()" modifier="material outline">
@@ -78,13 +76,13 @@
     </ons-page>
   </ons-modal>
 
-<!--loader---->
+  <!--loader---->
   <ons-modal id="loader" direction="up">
-      <div style="position: absolute;left: 50%;top:50%;transform: translate(-50%,-50%);">
-          <p>...Downloading Bible Data..</p>
-          <ons-progress-bar indeterminate="true"></ons-progress-bar>
-      </div>
-    </ons-modal>
+    <div style="position: absolute;left: 50%;top:50%;transform: translate(-50%,-50%);">
+      <p>...Downloading Bible Data..</p>
+      <ons-progress-bar indeterminate="true"></ons-progress-bar>
+    </div>
+  </ons-modal>
 
 </body>
 
