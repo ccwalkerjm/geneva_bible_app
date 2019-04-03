@@ -23,18 +23,20 @@
   <ons-page>
     <ons-toolbar>
       <div class="left">
-        <ons-toolbar-button modifier="material outline" onclick="showOptions()">
+        <ons-toolbar-button id="menu-options" modifier="material outline" onclick="showOptions()">
           <ons-icon icon="md-menu"></ons-icon>
         </ons-toolbar-button>
       </div>
       <div class="center">
         <ons-toolbar-button id="book-selector" modifier="material outline">
-          <span class="link-note">Click to Change Book--></span><span class="text"></span>
+         
         </ons-toolbar-button>
         <ons-toolbar-button id="chapter-selector" modifier="material outline">
-          <span class="text"></span><span class="link-note">
-            <--Click to Change Chapter</span> </ons-toolbar-button> </div> <div class="right">
-              <ons-toolbar-button onclick="window.close()" modifier="material outline">
+          
+          </ons-toolbar-button> 
+        </div> 
+          <div class="right">
+              <ons-toolbar-button id="exit" onclick="window.close()" modifier="material outline">
                 <ons-icon icon="md-close-circle"></ons-icon>
               </ons-toolbar-button>
       </div>
@@ -43,13 +45,13 @@
     <ons-bottom-toolbar modifier="aligned">
       <div style="text-align: center">
         <ons-toolbar-button id="previous-chapter" onclick="get_previous_chapter()" style="position: absolute; left: 10px;" modifier="material outline">
-          <ons-icon icon="md-arrow-left"></ons-icon>&nbsp;<span class="link-note">Previous Chapter</span>
+          <ons-icon icon="md-arrow-left"></ons-icon>
         </ons-toolbar-button>
         <span class="copyright">
-          &copy;2019 Courtney Walker
+          &copy;2019 CCW
         </span>
         <ons-toolbar-button id="next-chapter" onclick="get_next_chapter()" style="position: absolute; right: 10px;" modifier="material outline">
-          <span class="link-note">Next Chapter</span>&nbsp;<ons-icon icon="md-arrow-right"></ons-icon>
+          <ons-icon icon="md-arrow-right"></ons-icon>
         </ons-toolbar-button>
       </div>
     </ons-bottom-toolbar>
@@ -84,6 +86,19 @@
     </div>
   </ons-modal>
 
+
+  <ons-popover direction="down" id="popover">
+    <div style="padding: 10px; text-align: center;">
+      <h4 class="header"></h4>
+      <p class="message"></p>
+      <p>
+        <ons-button onclick="nextPopover()">Next</ons-button>
+        <ons-button onclick="hidePopover()">Close</ons-button>
+      </p>
+    </div>
+  </ons-popover>
+
 </body>
+
 
 </html>
