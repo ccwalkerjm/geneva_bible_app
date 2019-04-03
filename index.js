@@ -15,6 +15,7 @@ const _m_opts_easy = 1;
 const _m_opts_english = 2;
 const _m_opts_sacred = 3;
 const _m_opts_ord = 4;
+const _m_opts_book = 5;
 
 let _m_opts = [];
 
@@ -30,7 +31,7 @@ function getOptions() {
     _m_opts = JSON.parse(strObjs);
   } else {
     _m_opts[_m_opts_easy] = {
-      type: "Easy Mode",
+      type: "Help Mode",
       status: true,
       onText: "Turn Off!",
       offText: "Turn On!"
@@ -56,11 +57,18 @@ function getOptions() {
       onText: "Switch to Alphabetical",
       offText: "Switch to Traditional"
     };
+
+    _m_opts[_m_opts_book] = {
+      type: "Book Title",
+      status: true,
+      onText: "Switch to Abbreviation",
+      offText: "Switch to Book Name"
+    };
   }
   setEasyMode();
 }
 
-String.prototype.replaceAll = function(search, replacement) {
+String.prototype.replaceAll = function (search, replacement) {
   //const target = this;
   const regex = new RegExp('\\b' + search + '\\b', "g");
   return this.replace(regex, replacement);
@@ -69,17 +77,15 @@ String.prototype.replaceAll = function(search, replacement) {
 //
 
 function setEasyMode() {
-  _m_opts[_m_opts_easy].status
-    ? $(".link-note").show()
-    : $(".link-note").hide();
+  if (_m_opts[_m_opts_easy].status) nextPopover();
+  else hidePopover();
 }
 
 //show help menu
 function showOptions() {
   const about_options = {
     title: "About",
-    messageHTML:
-      "<p>Adaptable <strong>Geneva Bible</strong> by<br/><strong>Courtney Walker</strong></p>"
+    messageHTML: "<p>Adaptable <strong>Geneva Bible</strong> by<br/><strong>Courtney Walker</strong></p>"
   };
   ons
     .openActionSheet({
@@ -88,32 +94,37 @@ function showOptions() {
       buttons: [
         "About",
         _m_opts[_m_opts_easy].type +
-          ":" +
-          (_m_opts[_m_opts_easy].status
-            ? _m_opts[_m_opts_easy].onText
-            : _m_opts[_m_opts_easy].offText),
+        ":" +
+        (_m_opts[_m_opts_easy].status ?
+          _m_opts[_m_opts_easy].onText :
+          _m_opts[_m_opts_easy].offText),
         _m_opts[_m_opts_english].type +
-          ":" +
-          (_m_opts[_m_opts_english].status
-            ? _m_opts[_m_opts_english].onText
-            : _m_opts[_m_opts_english].offText),
+        ":" +
+        (_m_opts[_m_opts_english].status ?
+          _m_opts[_m_opts_english].onText :
+          _m_opts[_m_opts_english].offText),
         _m_opts[_m_opts_sacred].type +
-          ":" +
-          (_m_opts[_m_opts_sacred].status
-            ? _m_opts[_m_opts_sacred].onText
-            : _m_opts[_m_opts_sacred].offText),
+        ":" +
+        (_m_opts[_m_opts_sacred].status ?
+          _m_opts[_m_opts_sacred].onText :
+          _m_opts[_m_opts_sacred].offText),
         _m_opts[_m_opts_ord].type +
-          ":" +
-          (_m_opts[_m_opts_ord].status
-            ? _m_opts[_m_opts_ord].onText
-            : _m_opts[_m_opts_ord].offText),
+        ":" +
+        (_m_opts[_m_opts_ord].status ?
+          _m_opts[_m_opts_ord].onText :
+          _m_opts[_m_opts_ord].offText),
+        _m_opts[_m_opts_book].type +
+        ":" +
+        (_m_opts[_m_opts_book].status ?
+          _m_opts[_m_opts_book].onText :
+          _m_opts[_m_opts_book].offText),
         {
           label: "Cancel",
           icon: "md-close"
         }
       ]
     })
-    .then(function(index) {
+    .then(function (index) {
       if (index === 0) {
         return ons.notification.alert(about_options);
       } else if (index > 0 && index < _m_opts.length) {
@@ -122,6 +133,7 @@ function showOptions() {
         switch (index) {
           case _m_opts_english:
           case _m_opts_sacred:
+          case _m_opts_book:
             return selectBook(_book_index, _chapter_index);
         }
       }
@@ -211,8 +223,7 @@ function translate(chapterText) {
 function selectChapter(index) {
   _chapter_index = index || 0; //_chapter_index;
   const $chapSelector = document.querySelector("#chapter-selector");
-  const $text = $chapSelector.querySelector(".text");
-  $text.innerHTML = (_chapter_index + 1).toString();
+  $chapSelector.innerHTML = (_chapter_index + 1).toString();
 
   const encoded_text = _current_book[_chapter_index];
 
@@ -232,15 +243,16 @@ function selectChapter(index) {
 //select Book
 function selectBook(book_index, chapter_index) {
   const $bookSelector = document.querySelector("#book-selector");
-  const $text = $bookSelector.querySelector(".text");
 
   _previous_book_index = _book_index; ///set previous book marker
   _book_index = book_index;
 
-  $text.innerHTML = _books[_book_index].name;
+  $bookSelector.innerHTML = (_m_opts[_m_opts_book].status) ?
+    _books[_book_index].name :
+    _books[_book_index].abbreviation;
 
   $loader.show();
-  $.get(`books/${_books[_book_index].code}.json`, function(current_book) {
+  $.get(`books/${_books[_book_index].code}.json`, function (current_book) {
     $loader.hide();
     _current_book = current_book;
 
@@ -322,10 +334,10 @@ function load_service_worker() {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker
       .register("sw.js")
-      .then(function() {
+      .then(function () {
         console.log("Service Worker Registered");
       })
-      .catch(function(e) {
+      .catch(function (e) {
         console.log(e);
       });
   }
@@ -340,18 +352,77 @@ function addCapitalizedWords(words) {
   return words;
 }
 
+
+const helpTargets = [{
+    target: "#menu-options",
+    message: "Tap Here to Change Options",
+    header: "Menu Button",
+    direction: "down"
+  },
+  {
+    target: "#book-selector",
+    message: "Tap Book Title to Change to another Book",
+    header: "Book Selector",
+    direction: "down"
+  },
+  {
+    target: "#chapter-selector",
+    message: "Tap Chapter No to Change Chapter",
+    header: "Chapter Selector",
+    direction: "down"
+  },
+  {
+    target: "#exit",
+    message: "Tap this Button to exit the App",
+    header: "Exit Button",
+    direction: "down"
+  },
+  {
+    target: "#previous-chapter",
+    message: "Tap this Arrow to go to Previous Chapter",
+    header: "Previous Chapter",
+    direction: "up"
+  },
+  {
+    target: "#next-chapter",
+    message: "Tap this Arrow to go to Next Chapter",
+    header: "Next Chapter",
+    direction: "up"
+  }
+]
+
+
+var hidePopover = function () {
+  var popover = document.getElementById('popover');
+  if (popover.visible) popover.hide();
+};
+
+let nextHelp = 0;
+var nextPopover = function () {
+  const currentTarget = helpTargets[nextHelp];
+  const target = document.querySelector(currentTarget.target);
+  const popover = document.getElementById('popover');
+  if (popover.visible) popover.hide();
+  popover.querySelector("h4").innerHTML = currentTarget.header;
+  popover.querySelector(".message").innerHTML = currentTarget.message;
+  popover.setAttribute("direction", currentTarget.direction);
+  popover.show(target);
+  if (nextHelp === helpTargets.length - 1) nextHelp = 0;
+  else nextHelp++;
+}
+
 //start application--wait until the app is loaded properly
 load_service_worker();
-ons.ready(function() {
-  getOptions();
+ons.ready(function () {
   $loader = document.querySelector("#loader");
   $loader.show();
-  $.get("english.json", function(englishWords) {
+  $.get("english.json", function (englishWords) {
     _englishWords = addCapitalizedWords(englishWords);
-    $.get("sacred.json", function(sacredWords) {
+    $.get("sacred.json", function (sacredWords) {
       _sacredWords = addCapitalizedWords(sacredWords);
-      $.get("books_complete.json", function(books) {
+      $.get("books_complete.json", function (books) {
         $loader.hide();
+        getOptions();
         _books = books;
         // _book_index = 0;
         // _chapter_index = 0;
