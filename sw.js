@@ -26,6 +26,10 @@ self.addEventListener('install', function (e) {
                 'sacred.json',
                 'css/onsenui.css',
                 'css/onsen-css-components.css',
+                'css/ionicons/css/ionicons.min.css',
+                'css/material-design-iconic-font/css/material-design-iconic-font.min.css',
+                'css/font_awesome/css/font-awesome.min.css',
+                'css/font_awesome/css/v4-shims.min.css',
                 'js/onsenui.js',
                 'js/jquery.js'
             ].concat(bible_data));
