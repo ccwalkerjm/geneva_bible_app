@@ -24,10 +24,10 @@ self.addEventListener('install', function (e) {
                 'manifest.json',
                 'english.json',
                 'sacred.json',
-                'node_modules/onsenui/css/onsenui.css',
-                'node_modules/onsenui/css/onsen-css-components.css',
-                'node_modules/onsenui/js/onsenui.js',
-                'node_modules/jquery/dist/jquery.js'
+                'css/onsenui.css',
+                'css/onsen-css-components.css',
+                'js/onsenui.js',
+                'js/jquery.js'
             ].concat(bible_data));
         })
     );
