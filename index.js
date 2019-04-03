@@ -328,7 +328,8 @@ function populateBooks() {
 }
 
 //close modal
-function returnModal() {
+const manageBackButton = function () {
+    if (!$bibleModal.visible) return window.close();
     const $booklist = document.querySelector("#book-list");
     if ($booklist.style.display === "none") {
         populateBooks();
@@ -338,7 +339,7 @@ function returnModal() {
             animation: "fade"
         });
     }
-}
+};
 
 //load service worker
 function load_service_worker() {
@@ -448,6 +449,7 @@ function manageSwipe(e) {
  */
 
 const lastChapterName = "courserv_geneva_bible_app_last_chapter";
+
 function setLastChapter() {
     localStorage.setItem(lastChapterName, JSON.stringify({
         book_index: _book_index,
@@ -487,11 +489,16 @@ ons.ready(function () {
                 // _chapter_index = 0;
                 $bibleModal = document.querySelector("#bible-selection-modal");
 
-                $bibleModal.onDeviceBackButton = returnModal;
+
                 $bookSelector = document.querySelector("#book-selector");
                 $bookSelector.addEventListener("click", populateBooks);
                 const $chapSelector = document.querySelector("#chapter-selector");
                 $chapSelector.addEventListener("click", getChapters);
+
+                //setup backbutton management
+                ons.disableDeviceBackButtonHandler();
+                $bibleModal.onDeviceBackButton = manageBackButton;
+                ons.setDefaultDeviceBackButtonListener(manageBackButton);
                 getLastChapter();
                 selectBook(_book_index, _chapter_index);
             });
