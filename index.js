@@ -147,7 +147,7 @@ function getChapters(e) {
     const $bookName = $bibleModal.querySelector(".modal-book-name");
     const $modalTitle = $bibleModal.querySelector(".modal-title");
     $bookName.textContent = _books[_book_index].name;
-    $modalTitle.textContent = "Select Chapter";
+    $modalTitle.textContent = "";
     for (let i = 0; i < _books[_book_index].chapters; i++) {
         const $chap_item = document.createElement("ons-list-item");
         $chap_item.innerText = i + 1;
@@ -283,7 +283,7 @@ function populateBooks() {
     const $bookName = $bibleModal.querySelector(".modal-book-name");
     const $modalTitle = $bibleModal.querySelector(".modal-title");
     $bookName.textContent = "";
-    $modalTitle.textContent = "Select Book";
+    $modalTitle.textContent = "Books";
 
     let book_indexes = JSON.parse(JSON.stringify(_books));
 
