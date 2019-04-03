@@ -446,7 +446,7 @@ function manageSwipe(e) {
  */
 
 //start application--wait until the app is loaded properly
-//load_service_worker();
+load_service_worker();
 ons.ready(function () {
     // const carousel = document.querySelector("#carousel");   
     // carousel.addEventListener("postchange", manageSwipe);
