@@ -76,10 +76,6 @@ String.prototype.replaceAll = function (search, replacement) {
 
 //
 
-function setEasyMode() {
-  if (_m_opts[_m_opts_easy].status) nextPopover();
-  else hidePopover();
-}
 
 //show help menu
 function showOptions() {
@@ -391,13 +387,17 @@ const helpTargets = [{
   }
 ]
 
+function setEasyMode() {
+  if (_m_opts[_m_opts_easy].status) nextPopover();
+  else{
+    var popover = document.getElementById('popover');
+    if (popover.visible) popover.hide();
+  } 
+}
 
 var hidePopover = function () {
-  var popover = document.getElementById('popover');
-
-  _m_opts[_m_opts_easy].status = false; //added
-
-  if (popover.visible) popover.hide();
+  _m_opts[_m_opts_easy].status = false;
+  setOptions();
 };
 
 let nextHelp = 0;
