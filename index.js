@@ -427,7 +427,7 @@ var nextPopover = function () {
     else nextHelp++;
 }
 
-
+/* 
 function manageSwipe(e) {
     console.log(e);
     //alert(e.direction);
@@ -443,13 +443,13 @@ function manageSwipe(e) {
         });
     }
 }
-
+ */
 
 //start application--wait until the app is loaded properly
 //load_service_worker();
 ons.ready(function () {
-    const carousel = document.querySelector("#carousel");   
-    carousel.addEventListener("postchange", manageSwipe);
+    // const carousel = document.querySelector("#carousel");   
+    // carousel.addEventListener("postchange", manageSwipe);
     $loader = document.querySelector("#loader");
     $loader.show();
     $.get("english.json", function (englishWords) {
