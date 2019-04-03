@@ -229,6 +229,8 @@ function selectChapter(index) {
 
     $("#chapter").html(chapterText);
 
+    setLastChapter();
+
     if ($bibleModal.visible) {
         $bibleModal.hide({
             animation: "fade"
@@ -445,6 +447,27 @@ function manageSwipe(e) {
 }
  */
 
+const lastChapterName = "courserv_geneva_bible_app_last_chapter";
+function setLastChapter() {
+    localStorage.setItem(lastChapterName, JSON.stringify({
+        book_index: _book_index,
+        chapter_index: _chapter_index
+    }))
+}
+
+function getLastChapter() {
+    try {
+        const lastChap = localStorage.getItem(lastChapterName);
+        if (!lastChap) throw new Error("null found");
+        const obj = JSON.parse(lastChap);
+        _book_index = obj.book_index;
+        _chapter_index = obj.chapter_index;
+    } catch (e) {
+        _book_index = 0;
+        _chapter_index = 0;
+    }
+}
+
 //start application--wait until the app is loaded properly
 load_service_worker();
 ons.ready(function () {
@@ -469,7 +492,8 @@ ons.ready(function () {
                 $bookSelector.addEventListener("click", populateBooks);
                 const $chapSelector = document.querySelector("#chapter-selector");
                 $chapSelector.addEventListener("click", getChapters);
-                selectBook(0, 0);
+                getLastChapter();
+                selectBook(_book_index, _chapter_index);
             });
         });
     });
