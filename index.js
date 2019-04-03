@@ -394,6 +394,9 @@ const helpTargets = [{
 
 var hidePopover = function () {
   var popover = document.getElementById('popover');
+
+  _m_opts[_m_opts_easy].status = false; //added
+
   if (popover.visible) popover.hide();
 };
 
