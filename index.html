@@ -19,8 +19,9 @@
 
 </head>
 
-  <body>
-  <ons-page>
+<body>
+
+  <ons-page id-"mainPage">
     <ons-toolbar>
       <div class="left">
         <ons-toolbar-button id="menu-options" modifier="material outline" onclick="showOptions()">
@@ -29,33 +30,48 @@
       </div>
       <div class="center">
         <ons-toolbar-button id="book-selector" modifier="material outline">
-         
+
         </ons-toolbar-button>
         <ons-toolbar-button id="chapter-selector" modifier="material outline">
-          
-          </ons-toolbar-button> 
-        </div> 
-          <div class="right">
-              <ons-toolbar-button id="exit" onclick="window.close()" modifier="material outline">
-                <ons-icon icon="md-close-circle"></ons-icon>
-              </ons-toolbar-button>
+
+        </ons-toolbar-button>
+      </div>
+      <div class="right">
+        <ons-toolbar-button id="exit" onclick="window.close()" modifier="material outline">
+          <ons-icon icon="md-close-circle"></ons-icon>
+        </ons-toolbar-button>
       </div>
     </ons-toolbar>
-    <div id="chapter"></div>
+
+
+    <ons-carousel animation-options="{duration: 0.2, delay: 1, timing: 'ease-in'}" animation="fade" fullscreen swipeable initial-index="1" id="carousel">
+      <ons-carousel-item>
+      </ons-carousel-item>
+      <ons-carousel-item>
+        <div id="chapter"></div>
+      </ons-carousel-item>
+      <ons-carousel-item>
+      </ons-carousel-item>
+    </ons-carousel>
+
+
     <ons-bottom-toolbar modifier="aligned">
       <div style="text-align: center">
-        <ons-toolbar-button id="previous-chapter" onclick="get_previous_chapter()" style="position: absolute; left: 10px;" modifier="material outline">
+        <ons-toolbar-button id="previous-chapter" onclick="get_previous_chapter()"
+          style="position: absolute; left: 10px;" modifier="material outline">
           <ons-icon icon="md-arrow-left"></ons-icon>
         </ons-toolbar-button>
         <span class="copyright">
           &copy;2019 CCW
         </span>
-        <ons-toolbar-button id="next-chapter" onclick="get_next_chapter()" style="position: absolute; right: 10px;" modifier="material outline">
+        <ons-toolbar-button id="next-chapter" onclick="get_next_chapter()" style="position: absolute; right: 10px;"
+          modifier="material outline">
           <ons-icon icon="md-arrow-right"></ons-icon>
         </ons-toolbar-button>
       </div>
     </ons-bottom-toolbar>
   </ons-page>
+
 
   <ons-modal id="bible-selection-modal" direction="up">
     <ons-page>

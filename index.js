@@ -68,7 +68,7 @@ function getOptions() {
     setEasyMode();
 }
 
-String.prototype.replaceAll = function(search, replacement) {
+String.prototype.replaceAll = function (search, replacement) {
     //const target = this;
     const regex = new RegExp('\\b' + search + '\\b', "g");
     return this.replace(regex, replacement);
@@ -120,7 +120,7 @@ function showOptions() {
                 }
             ]
         })
-        .then(function(index) {
+        .then(function (index) {
             if (index === 0) {
                 return ons.notification.alert(about_options);
             } else if (index > 0 && index < _m_opts.length) {
@@ -251,7 +251,7 @@ function selectBook(book_index, chapter_index) {
 
     let book_code = _books[_book_index].code;
 
-    const gotoChapter = function() {
+    const gotoChapter = function () {
         if (typeof chapter_index == "number") selectChapter(chapter_index);
         else getChapters();
     };
@@ -259,7 +259,7 @@ function selectBook(book_index, chapter_index) {
     if (book_code === _current_book_code) {
         gotoChapter();
     } else {
-        const get_new_book = function(current_book) {
+        const get_new_book = function (current_book) {
             $loader.hide();
             _current_book_code = book_code;
             _current_book = current_book;
@@ -343,10 +343,10 @@ function load_service_worker() {
     if ("serviceWorker" in navigator) {
         navigator.serviceWorker
             .register("sw.js")
-            .then(function() {
+            .then(function () {
                 console.log("Service Worker Registered");
             })
-            .catch(function(e) {
+            .catch(function (e) {
                 console.log(e);
             });
     }
@@ -363,41 +363,41 @@ function addCapitalizedWords(words) {
 
 
 const helpTargets = [{
-    target: "#menu-options",
-    message: "Tap Here to Change Options",
-    header: "Menu Button",
-    direction: "down"
-},
-{
-    target: "#book-selector",
-    message: "Tap Book Title to Change to another Book",
-    header: "Book Selector",
-    direction: "down"
-},
-{
-    target: "#chapter-selector",
-    message: "Tap Chapter No to Change Chapter",
-    header: "Chapter Selector",
-    direction: "down"
-},
-{
-    target: "#exit",
-    message: "Tap this Button to exit the App",
-    header: "Exit Button",
-    direction: "down"
-},
-{
-    target: "#previous-chapter",
-    message: "Tap this Arrow to go to Previous Chapter",
-    header: "Previous Chapter",
-    direction: "up"
-},
-{
-    target: "#next-chapter",
-    message: "Tap this Arrow to go to Next Chapter",
-    header: "Next Chapter",
-    direction: "up"
-}
+        target: "#menu-options",
+        message: "Tap Here to Change Options",
+        header: "Menu Button",
+        direction: "down"
+    },
+    {
+        target: "#book-selector",
+        message: "Tap Book Title to Change to another Book",
+        header: "Book Selector",
+        direction: "down"
+    },
+    {
+        target: "#chapter-selector",
+        message: "Tap Chapter No to Change Chapter",
+        header: "Chapter Selector",
+        direction: "down"
+    },
+    {
+        target: "#exit",
+        message: "Tap this Button to exit the App",
+        header: "Exit Button",
+        direction: "down"
+    },
+    {
+        target: "#previous-chapter",
+        message: "Tap this Arrow to go to Previous Chapter",
+        header: "Previous Chapter",
+        direction: "up"
+    },
+    {
+        target: "#next-chapter",
+        message: "Tap this Arrow to go to Next Chapter",
+        header: "Next Chapter",
+        direction: "up"
+    }
 ]
 
 function setEasyMode() {
@@ -408,13 +408,13 @@ function setEasyMode() {
     }
 }
 
-var hidePopover = function() {
+var hidePopover = function () {
     _m_opts[_m_opts_easy].status = false;
     setOptions();
 };
 
 let nextHelp = 0;
-var nextPopover = function() {
+var nextPopover = function () {
     const currentTarget = helpTargets[nextHelp];
     const target = document.querySelector(currentTarget.target);
     const popover = document.getElementById('popover');
@@ -427,22 +427,44 @@ var nextPopover = function() {
     else nextHelp++;
 }
 
+
+function manageSwipe(e) {
+    console.log(e);
+    //alert(e.direction);
+    if (event.activeIndex === 0) {
+        get_previous_chapter();
+        e.target.setActiveIndex(1, {
+            animation: 'none'
+        });
+    } else if (event.activeIndex === 2) {
+        get_next_chapter();
+        e.target.setActiveIndex(1, {
+            animation: 'none'
+        });
+    }
+}
+
+
 //start application--wait until the app is loaded properly
-load_service_worker();
-ons.ready(function() {
+//load_service_worker();
+ons.ready(function () {
+    const carousel = document.querySelector("#carousel");   
+    carousel.addEventListener("postchange", manageSwipe);
     $loader = document.querySelector("#loader");
     $loader.show();
-    $.get("english.json", function(englishWords) {
+    $.get("english.json", function (englishWords) {
         _englishWords = addCapitalizedWords(englishWords);
-        $.get("sacred.json", function(sacredWords) {
+        $.get("sacred.json", function (sacredWords) {
             _sacredWords = addCapitalizedWords(sacredWords);
-            $.get("books_complete.json", function(books) {
+            $.get("books_complete.json", function (books) {
                 $loader.hide();
                 getOptions();
                 _books = books;
                 // _book_index = 0;
                 // _chapter_index = 0;
                 $bibleModal = document.querySelector("#bible-selection-modal");
+
+                $bibleModal.onDeviceBackButton = returnModal;
                 $bookSelector = document.querySelector("#book-selector");
                 $bookSelector.addEventListener("click", populateBooks);
                 const $chapSelector = document.querySelector("#chapter-selector");
