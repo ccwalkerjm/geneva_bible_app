@@ -8,7 +8,8 @@ let _previous_book_index = 0;
 let _chapter_index = 0;
 let _current_book;
 
-let _englishWords, _sacredWords;
+let _englishWords = {},
+    _sacredWords = {};
 
 let $loader;
 const _m_opts_easy = 1;
@@ -475,33 +476,42 @@ load_service_worker();
 ons.ready(function () {
     // const carousel = document.querySelector("#carousel");   
     // carousel.addEventListener("postchange", manageSwipe);
+
+    const load_critical = function () {
+        $.get("books_complete.json", function (books) {
+            $loader.hide();
+            getOptions();
+            _books = books;
+            // _book_index = 0;
+            // _chapter_index = 0;           
+            $bookSelector = document.querySelector("#book-selector");
+            $bookSelector.addEventListener("click", populateBooks);
+            const $chapSelector = document.querySelector("#chapter-selector");
+            $chapSelector.addEventListener("click", getChapters);
+
+            //setup backbutton management
+            ons.disableDeviceBackButtonHandler();
+            $bibleModal = document.querySelector("#bible-selection-modal");
+            $bibleModal.onDeviceBackButton = manageBackButton;
+            ons.setDefaultDeviceBackButtonListener(manageBackButton);
+            getLastChapter();
+            selectBook(_book_index, _chapter_index);
+        }).fail(function () {
+            ons.notification.alert('Network Problem Detected!');
+        });
+    };
+
     $loader = document.querySelector("#loader");
     $loader.show();
     $.get("english.json", function (englishWords) {
         _englishWords = addCapitalizedWords(englishWords);
         $.get("sacred.json", function (sacredWords) {
             _sacredWords = addCapitalizedWords(sacredWords);
-            $.get("books_complete.json", function (books) {
-                $loader.hide();
-                getOptions();
-                _books = books;
-                // _book_index = 0;
-                // _chapter_index = 0;
-                $bibleModal = document.querySelector("#bible-selection-modal");
-
-
-                $bookSelector = document.querySelector("#book-selector");
-                $bookSelector.addEventListener("click", populateBooks);
-                const $chapSelector = document.querySelector("#chapter-selector");
-                $chapSelector.addEventListener("click", getChapters);
-
-                //setup backbutton management
-                ons.disableDeviceBackButtonHandler();
-                $bibleModal.onDeviceBackButton = manageBackButton;
-                ons.setDefaultDeviceBackButtonListener(manageBackButton);
-                getLastChapter();
-                selectBook(_book_index, _chapter_index);
-            });
+            load_critical();
+        }).fail(function () {
+            load_critical();
         });
+    }).fail(function () {
+        load_critical();
     });
 });
