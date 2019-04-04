@@ -13,7 +13,6 @@ self.addEventListener('install', function (e) {
             // added to the cache.
             return cache.addAll([
                 'https://ccwalkerjm.github.io/geneva_bible_app/',
-                'https://ccwalkerjm.github.io/geneva_bible_app/index.html',
                 'index.html',
                 'index.css',
                 'index.js',
