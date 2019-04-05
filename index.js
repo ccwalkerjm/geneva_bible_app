@@ -77,14 +77,14 @@ function getOptions() {
 
         _m_opts[_m_opts_english] = {
             type: "English",
-            status: "false",
+            status: false,
             onText: "Switch to Modern!",
             offText: "Switch to Old!"
         };
 
         _m_opts[_m_opts_sacred] = {
             type: "Sacred Names",
-            status: false,
+            status: true,
             onText: "Turn On",
             offText: "Turn Off"
         };
@@ -157,6 +157,7 @@ function showOptions() {
             } else if (index > 0 && index < _m_opts.length) {
                 _m_opts[index].status = !_m_opts[index].status;
                 setOptions();
+                if(index === _m_opts_sacred) ons.notification.alert("Sacred Names only work with Modern Emglish.");
                 switch (index) {
                     case _m_opts_english:
                     case _m_opts_sacred:
