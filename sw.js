@@ -24,14 +24,17 @@ self.addEventListener('install', function (e) {
                 'manifest.json',
                 //'english.json',
                 //'sacred.json',
+                'js/jquery.js',
+                'js/onsenui.js',
                 'css/onsenui.css',
                 'css/onsen-css-components.css',
                 'css/ionicons/css/ionicons.min.css',
-                'css/material-design-iconic-font/css/material-design-iconic-font.min.css',
                 'css/font_awesome/css/font-awesome.min.css',
                 'css/font_awesome/css/v4-shims.min.css',
-                'js/onsenui.js',
-                'js/jquery.js'
+                'css/material-design-iconic-font/css/material-design-iconic-font.min.css',
+                'css/material-design-iconic-font/fonts/Material-Design-Iconic-Font.woff2',
+                'css/material-design-iconic-font/fonts/Material-Design-Iconic-Font.woff',
+                'css/material-design-iconic-font/fonts/Material-Design-Iconic-Font.ttf'
             ].concat(bible_data));
         })
     );

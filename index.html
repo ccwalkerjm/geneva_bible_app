@@ -16,7 +16,18 @@
   <script src="js/onsenui.js"></script>
   <script src="js/jquery.js"></script>
   <script src="index.js"></script>
-
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("sw.js")
+        .then(function () {
+          console.log("Service Worker Registered");
+        })
+        .catch(function (e) {
+          console.log(e);
+        });
+    }
+  </script>
 </head>
 
 <body>
@@ -42,20 +53,15 @@
         </ons-toolbar-button>
       </div>
     </ons-toolbar>
-
-   
-   <!--  <ons-carousel auto-scroll auto-scroll-ratio="0.1" fullscreen swipeable initial-index="1" id="carousel">
+    <!--  <ons-carousel auto-scroll auto-scroll-ratio="0.1" fullscreen swipeable initial-index="1" id="carousel">
       <ons-carousel-item>
       </ons-carousel-item>
       <ons-carousel-item> -->
-        
-        <div id="chapter"></div>
-       
-     <!--  </ons-carousel-item>
+    <div id="chapter"></div>
+    <!--  </ons-carousel-item>
       <ons-carousel-item>
       </ons-carousel-item>
     </ons-carousel> -->
-
     <ons-bottom-toolbar modifier="aligned">
       <div style="text-align: center">
         <ons-toolbar-button id="previous-chapter" onclick="get_previous_chapter()"
@@ -114,6 +120,8 @@
       </p>
     </div>
   </ons-popover>
+
+
 
 </body>
 

@@ -1,32 +1,69 @@
-const _GENESIS_CODE = "GEN";
 const _MATTHEW_CODE = "MAT";
-let $bibleModal; // = document.querySelector('ons-modal');
+
+//sacred phrases for replacements
+const _sacredPhrases = {
+    "Jesus": "Yeshua",
+    "God": "Yahweh",
+    "Jesus Christ": "Yeshua, the Messiah",
+    "Christ": "Messiah"
+};
+
+//ignore these sacred replacements
+const _ignoreSacredPhrases = {
+    "my God": "",
+    "lord God": "",
+    "our God": "",
+    "living God": "",
+    "the God": ""
+};
+
+//key components
+let $bibleModal;
 let $bookSelector;
+let $loader;
+
+//bible variables
 let _books;
 let _book_index = 0;
 let _previous_book_index = 0;
 let _chapter_index = 0;
 let _current_book;
+let _englishWords = {};
 
-let _englishWords = {},
-    _sacredWords = {};
 
-let $loader;
+
+//options constants and variables
 const _m_opts_easy = 1;
 const _m_opts_english = 2;
 const _m_opts_sacred = 3;
 const _m_opts_ord = 4;
 const _m_opts_book = 5;
-
 let _m_opts = [];
+
+//storage key for the last book/chapter
+const STORAGE_LAST_BOOK_CHAPTER_KEY = "courserv_geneva_bible_app_last_chapter";
+//storage key for english words
+const STORAGE_ENGLISH_WORDS_KEY = "courserv_english_words_key";
+//storage key for the options
+const STORAGE_OPTIONS_KEY = "courserv_geneva_bible_opts";
+
+
+String.prototype.replaceAll = function (search, replacement, isSpecial) {
+    //const target = this;
+    let limiter = '\\b';
+    if (isSpecial) limiter = '';
+    const regex = new RegExp(limiter + search + limiter, "g");
+    return this.replace(regex, replacement);
+};
+
 
 function setOptions() {
     setEasyMode();
-    localStorage.setItem("courserv_geneva_bible_opts", JSON.stringify(_m_opts));
+    localStorage.setItem(STORAGE_OPTIONS_KEY, JSON.stringify(_m_opts));
 }
 
 function getOptions() {
-    const strObjs = localStorage.getItem("courserv_geneva_bible_opts");
+    const strObjs = localStorage.getItem(STORAGE_OPTIONS_KEY);
 
     if (strObjs) {
         _m_opts = JSON.parse(strObjs);
@@ -48,8 +85,8 @@ function getOptions() {
         _m_opts[_m_opts_sacred] = {
             type: "Sacred Names",
             status: false,
-            onText: "Turn Off",
-            offText: "Turn On"
+            onText: "Turn On",
+            offText: "Turn Off"
         };
 
         _m_opts[_m_opts_ord] = {
@@ -69,13 +106,6 @@ function getOptions() {
     setEasyMode();
 }
 
-String.prototype.replaceAll = function (search, replacement) {
-    //const target = this;
-    const regex = new RegExp('\\b' + search + '\\b', "g");
-    return this.replace(regex, replacement);
-};
-
-//
 
 
 //show help menu
@@ -186,7 +216,7 @@ function get_next_chapter() {
     selectBook(_book_index, _chapter_index);
 }
 
-function replaceBiggestFirst(xtext, translationList) {
+function replaceAllBySizeDescending(xtext, translationList) {
     let transformed_arr = [];
     for (let key in translationList) {
         transformed_arr.push({
@@ -196,21 +226,57 @@ function replaceBiggestFirst(xtext, translationList) {
     }
     //arrange with biggest first
     transformed_arr.sort((a, b) => b.old.length - a.old.length);
-    console.log("sizes", transformed_arr);
     for (let i = 0; i < transformed_arr.length; i++) {
         xtext = xtext.replaceAll(transformed_arr[i].old, transformed_arr[i].new);
     }
     return xtext;
 }
 
-function translate(chapterText) {
-    //change to modern words
-    if (!_m_opts[_m_opts_english].status) {
-        chapterText = replaceBiggestFirst(chapterText, _englishWords);
+function replaceAllWithList(xtext, translationList, isSpecial) {
+    for (let key in translationList) {
+        xtext = xtext.replaceAll(key, translationList[key], isSpecial);
+    }
+    return xtext;
+}
 
-        //_sacredWords
+//capitalize first word
+function addCapitalizedWords(words) {
+    for (let key in words) {
+        let word = words[key];
+        //check if already a capital 
+        if (key.slice(0, 1) === key.slice(0, 1).toLowerCase()) {
+            words[key.slice(0, 1).toUpperCase() + key.slice(1)] =
+                word.slice(0, 1).toUpperCase() + word.slice(1);
+        }
+    }
+    return words;
+}
+
+function translate(chapterText) {
+    if (!_m_opts[_m_opts_english].status) {
+        //change to modern words        
+        chapterText = replaceAllBySizeDescending(chapterText, addCapitalizedWords(_englishWords));
+
         if (!_m_opts[_m_opts_sacred].status) {
-            chapterText = replaceBiggestFirst(chapterText, _sacredWords);
+            //add capitalized first letter phrases
+            let ignorePhrases = addCapitalizedWords(_ignoreSacredPhrases);
+            let swappedIgnoreValues = {};
+            //add unique value  and create a swapped object
+            for (key in ignorePhrases) {
+                const value = btoa(key);
+                ignorePhrases[key] = value;
+                swappedIgnoreValues[value] = key;
+            }
+            console.log("ignore phrases", ignorePhrases);
+            console.log("swapped phrases", swappedIgnoreValues);
+            //mark ignore phrases
+            chapterText = replaceAllWithList(chapterText, ignorePhrases);
+
+            //_sacredPhrases        
+            chapterText = replaceAllWithList(chapterText, _sacredPhrases);
+
+            //reverse ignore phrases            
+            chapterText = replaceAllWithList(chapterText, swappedIgnoreValues, true);
         }
     }
     return chapterText;
@@ -226,7 +292,9 @@ function selectChapter(index) {
 
     let chapterText = atob(encoded_text);
 
-    chapterText = translate(chapterText);
+
+    chapterText =
+        translate(chapterText);
 
     $("#chapter").html(chapterText);
 
@@ -342,28 +410,6 @@ const manageBackButton = function () {
     }
 };
 
-//load service worker
-function load_service_worker() {
-    if ("serviceWorker" in navigator) {
-        navigator.serviceWorker
-            .register("sw.js")
-            .then(function () {
-                console.log("Service Worker Registered");
-            })
-            .catch(function (e) {
-                console.log(e);
-            });
-    }
-}
-
-function addCapitalizedWords(words) {
-    for (let key in words) {
-        let word = words[key];
-        words[key.slice(0, 1).toUpperCase() + key.slice(1)] =
-            word.slice(0, 1).toUpperCase() + word.slice(1);
-    }
-    return words;
-}
 
 
 const helpTargets = [{
@@ -449,10 +495,10 @@ function manageSwipe(e) {
 }
  */
 
-const lastChapterName = "courserv_geneva_bible_app_last_chapter";
+
 
 function setLastChapter() {
-    localStorage.setItem(lastChapterName, JSON.stringify({
+    localStorage.setItem(STORAGE_LAST_BOOK_CHAPTER_KEY, JSON.stringify({
         book_index: _book_index,
         chapter_index: _chapter_index
     }))
@@ -460,7 +506,7 @@ function setLastChapter() {
 
 function getLastChapter() {
     try {
-        const lastChap = localStorage.getItem(lastChapterName);
+        const lastChap = localStorage.getItem(STORAGE_LAST_BOOK_CHAPTER_KEY);
         if (!lastChap) throw new Error("null found");
         const obj = JSON.parse(lastChap);
         _book_index = obj.book_index;
@@ -472,18 +518,29 @@ function getLastChapter() {
 }
 
 //start application--wait until the app is loaded properly
-load_service_worker();
 ons.ready(function () {
     // const carousel = document.querySelector("#carousel");   
     // carousel.addEventListener("postchange", manageSwipe);
+    const process_bible_data = function (receivedWords) {
+        try {
+            if (receivedWords && typeof receivedWords === 'object') {
+                //save downloaded words  ---this is not cached.
+                localStorage.setItem(STORAGE_ENGLISH_WORDS_KEY, JSON.stringify(receivedWords));
+            }
+            //get saved words regardless  
+            const savedWords = localStorage.getItem(STORAGE_ENGLISH_WORDS_KEY);
+            if (!savedWords) throw new Error("Null Saved Words");
+            _englishWords = JSON.parse(savedWords);
+        } catch (e) {
+            console.log("english word error:", e);
+            //assumed empty list
+            _englishWords = {};
+        }
 
-    const load_critical = function () {
         $.get("books_complete.json", function (books) {
             $loader.hide();
             getOptions();
             _books = books;
-            // _book_index = 0;
-            // _chapter_index = 0;           
             $bookSelector = document.querySelector("#book-selector");
             $bookSelector.addEventListener("click", populateBooks);
             const $chapSelector = document.querySelector("#chapter-selector");
@@ -504,14 +561,8 @@ ons.ready(function () {
     $loader = document.querySelector("#loader");
     $loader.show();
     $.get("english.json", function (englishWords) {
-        _englishWords = addCapitalizedWords(englishWords);
-        $.get("sacred.json", function (sacredWords) {
-            _sacredWords = addCapitalizedWords(sacredWords);
-            load_critical();
-        }).fail(function () {
-            load_critical();
-        });
+        process_bible_data(englishWords);
     }).fail(function () {
-        load_critical();
+        process_bible_data();
     });
 });
