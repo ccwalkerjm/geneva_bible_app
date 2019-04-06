@@ -3,6 +3,7 @@ const _MATTHEW_CODE = "MAT";
 //sacred phrases for replacements
 const _sacredPhrases = {
     "Jesus": "Yeshua",
+    "JESUS":"YESHUA",
     "God": "Yahweh",
     "Jesus Christ": "Yeshua, the Messiah",
     "Christ": "Messiah"
