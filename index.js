@@ -3,7 +3,7 @@ const _MATTHEW_CODE = "MAT";
 //sacred phrases for replacements
 const _sacredPhrases = {
     "Jesus": "Yeshua",
-    "JESUS":"YESHUA",
+    "JESUS": "YESHUA",
     "God": "Yahweh",
     "Jesus Christ": "Yeshua, the Messiah",
     "Christ": "Messiah"
@@ -59,7 +59,6 @@ String.prototype.replaceAll = function (search, replacement, isSpecial) {
 
 
 function setOptions() {
-    setEasyMode();
     localStorage.setItem(STORAGE_OPTIONS_KEY, JSON.stringify(_m_opts));
 }
 
@@ -104,70 +103,79 @@ function getOptions() {
             offText: "Switch to Book Name"
         };
     }
-    setEasyMode();
+    //set version select
+    const versionSelector = document.querySelector("#book-version");
+    if (_m_opts[_m_opts_english].status &&
+        _m_opts[_m_opts_sacred].status
+    )
+        versionSelector.selectedIndex = 0;
+    else if (!_m_opts[_m_opts_english].status &&
+        _m_opts[_m_opts_sacred].status
+    )
+        versionSelector.selectedIndex = 1;
+    else
+        versionSelector.selectedIndex = 2;
+
+    //set book title  
+    const titleSelector = document.querySelector("#title-type");
+    if (_m_opts[_m_opts_book].status)
+        titleSelector.selectedIndex = 0;
+    else
+        titleSelector.selectedIndex = 1;
+
+    //set help
+    if (_m_opts[_m_opts_easy].status) showHelp();
 }
 
 
+const setTitle = function (e) {
+    switch (e.target.value) {
+        case "name":
+            _m_opts[_m_opts_book].status = true;
+            break;
+        case "abbreviation":
+            _m_opts[_m_opts_book].status = false;
+            break;
+    }
+    setOptions();
+    selectBook(_book_index, _chapter_index);
+};
 
-//show help menu
-function showOptions() {
-    const about_options = {
-        title: "About",
-        messageHTML: "<p>Adaptable <strong>Geneva Bible</strong> by<br/><strong>Courtney Walker</strong></p>"
+
+const setVersion = function (e) {
+    switch (e.target.value) {
+        case "1599":
+            _m_opts[_m_opts_english].status = true;
+            _m_opts[_m_opts_sacred].status = true;
+            break;
+        case "modern":
+            _m_opts[_m_opts_english].status = false;
+            _m_opts[_m_opts_sacred].status = true;
+            break;
+        case "sacred":
+            _m_opts[_m_opts_english].status = false;
+            _m_opts[_m_opts_sacred].status = false;
+            break;
+    }
+    setOptions();
+    selectBook(_book_index, _chapter_index);
+};
+
+
+const showHelp = function () {
+    _m_opts[_m_opts_easy].status = true;
+    const messageObj = {
+        title: "Help",
+        messageHTML: 'You can now swipe the chapter display left or right to change to the previous or next chapter. To learn about other features press the next. Otherwise press the cancel to exit.',
+        buttonLabels: ["Cancel", "Next"]
     };
-    ons
-        .openActionSheet({
-            //title: 'Menu',
-            cancelable: true,
-            buttons: [
-                "About",
-                _m_opts[_m_opts_easy].type +
-                ":" +
-                (_m_opts[_m_opts_easy].status ?
-                    _m_opts[_m_opts_easy].onText :
-                    _m_opts[_m_opts_easy].offText),
-                _m_opts[_m_opts_english].type +
-                ":" +
-                (_m_opts[_m_opts_english].status ?
-                    _m_opts[_m_opts_english].onText :
-                    _m_opts[_m_opts_english].offText),
-                _m_opts[_m_opts_sacred].type +
-                ":" +
-                (_m_opts[_m_opts_sacred].status ?
-                    _m_opts[_m_opts_sacred].onText :
-                    _m_opts[_m_opts_sacred].offText),
-                _m_opts[_m_opts_ord].type +
-                ":" +
-                (_m_opts[_m_opts_ord].status ?
-                    _m_opts[_m_opts_ord].onText :
-                    _m_opts[_m_opts_ord].offText),
-                _m_opts[_m_opts_book].type +
-                ":" +
-                (_m_opts[_m_opts_book].status ?
-                    _m_opts[_m_opts_book].onText :
-                    _m_opts[_m_opts_book].offText),
-                {
-                    label: "Cancel",
-                    icon: "md-close"
-                }
-            ]
-        })
-        .then(function (index) {
-            if (index === 0) {
-                return ons.notification.alert(about_options);
-            } else if (index > 0 && index < _m_opts.length) {
-                _m_opts[index].status = !_m_opts[index].status;
-                setOptions();
-                if(index === _m_opts_sacred) ons.notification.alert("Sacred Names only work with Modern Emglish.");
-                switch (index) {
-                    case _m_opts_english:
-                    case _m_opts_sacred:
-                    case _m_opts_book:
-                        return selectBook(_book_index, _chapter_index);
-                }
-            }
-        });
-}
+    ons.notification.confirm(messageObj).then(function (idx) {
+        _m_opts[_m_opts_easy].status = !!idx;
+        setOptions();
+        if (idx == 0) return;
+        nextPopover();
+    });
+};
 
 //list chapters for book
 function getChapters(e) {
@@ -176,11 +184,10 @@ function getChapters(e) {
     const $chapterList = document.querySelector("#chapter-list");
     $chapterList.style.display = "block";
     $chapterList.innerHTML = "";
-    //const substring = "<li><a href";
-    const $bookName = $bibleModal.querySelector(".modal-book-name");
+    //const substring = "<li><a href";   
     const $modalTitle = $bibleModal.querySelector(".modal-title");
-    $bookName.textContent = _books[_book_index].name;
-    $modalTitle.textContent = "";
+    $modalTitle.textContent = _books[_book_index].name;
+
     for (let i = 0; i < _books[_book_index].chapters; i++) {
         const $chap_item = document.createElement("ons-list-item");
         $chap_item.innerText = i + 1;
@@ -351,9 +358,7 @@ function populateBooks() {
     const $booklist = document.querySelector("#book-list");
     $booklist.style.display = "block";
     $booklist.innerHTML = "";
-    const $bookName = $bibleModal.querySelector(".modal-book-name");
     const $modalTitle = $bibleModal.querySelector(".modal-title");
-    $bookName.textContent = "";
     $modalTitle.textContent = "Books";
 
     let book_indexes = JSON.parse(JSON.stringify(_books));
@@ -415,9 +420,9 @@ const manageBackButton = function () {
 
 
 const helpTargets = [{
-        target: "#menu-options",
-        message: "Tap Here to Change Options",
-        header: "Menu Button",
+        target: "#help-selector",
+        message: "Tap here to get help.",
+        header: "Help",
         direction: "down"
     },
     {
@@ -439,30 +444,25 @@ const helpTargets = [{
         direction: "down"
     },
     {
-        target: "#previous-chapter",
-        message: "Tap this Arrow to go to Previous Chapter",
-        header: "Previous Chapter",
+        target: "#book-version",
+        message: "Select Bible Version Here. 1599 Version, Modern English and Sacred Names",
+        header: "Bible Version",
         direction: "up"
     },
     {
-        target: "#next-chapter",
-        message: "Tap this Arrow to go to Next Chapter",
-        header: "Next Chapter",
+        target: "#title-type",
+        message: "Set Book Title Type; whether the standard name or the abbreviation(code)",
+        header: "Title Title",
         direction: "up"
     }
-]
+];
 
-function setEasyMode() {
-    if (_m_opts[_m_opts_easy].status) nextPopover();
-    else {
-        var popover = document.getElementById('popover');
-        if (popover.visible) popover.hide();
-    }
-}
 
 var hidePopover = function () {
     _m_opts[_m_opts_easy].status = false;
     setOptions();
+    var popover = document.getElementById('popover');
+    popover.hide();
 };
 
 let nextHelp = 0;
@@ -519,10 +519,44 @@ function getLastChapter() {
     }
 }
 
+let accept_gesture = true;
+
+function resetGesture() {
+    accept_gesture = true;
+}
+
+const gestureListner = function (event) {
+    //if (event.type !== 'release') {       
+    console.log("gesture:", event.type);
+    if (accept_gesture) {
+        accept_gesture = false;
+        switch (event.type) {
+            case "dragleft":
+            case "swipeleft":
+                get_next_chapter()
+                break;
+            case "dragright":
+            case "swiperight":
+                get_previous_chapter();
+                break;
+        }
+        setTimeout(resetGesture, 1000);
+    }
+    //}
+};
+
 //start application--wait until the app is loaded properly
 ons.ready(function () {
     // const carousel = document.querySelector("#carousel");   
     // carousel.addEventListener("postchange", manageSwipe);
+
+    var gestureEvents = ['release', 'dragleft', 'dragright', 'swipeleft', 'swiperight'];
+    const $chapter = document.querySelector("#chapter");
+
+    for (let i in gestureEvents) {
+        $chapter.addEventListener(gestureEvents[i], gestureListner, true);
+    }
+
     const process_bible_data = function (receivedWords) {
         try {
             if (receivedWords && typeof receivedWords === 'object') {

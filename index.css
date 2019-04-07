@@ -22,7 +22,7 @@
     position: absolute;left: 50%;transform: translate(-50%);
 }
 
-span.modal-book-name {
+span.modal-title {
     margin-left: 10px;
 }
 

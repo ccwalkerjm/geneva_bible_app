@@ -35,16 +35,14 @@
   <ons-page id-"mainPage">
     <ons-toolbar>
       <div class="left">
-        <ons-toolbar-button id="menu-options" modifier="material outline" onclick="showOptions()">
-          <ons-icon icon="md-menu"></ons-icon>
+        <ons-toolbar-button id="help-selector" onclick="showHelp()" modifier="material outline">
+          <ons-icon icon="md-help"></ons-icon>
         </ons-toolbar-button>
       </div>
       <div class="center">
         <ons-toolbar-button id="book-selector" modifier="material outline">
-
         </ons-toolbar-button>
         <ons-toolbar-button id="chapter-selector" modifier="material outline">
-
         </ons-toolbar-button>
       </div>
       <div class="right">
@@ -53,29 +51,29 @@
         </ons-toolbar-button>
       </div>
     </ons-toolbar>
-    <!--  <ons-carousel auto-scroll auto-scroll-ratio="0.1" fullscreen swipeable initial-index="1" id="carousel">
-      <ons-carousel-item>
-      </ons-carousel-item>
-      <ons-carousel-item> -->
-    <div id="chapter"></div>
-    <!--  </ons-carousel-item>
-      <ons-carousel-item>
-      </ons-carousel-item>
-    </ons-carousel> -->
+    <ons-gesture-detector>
+      <div id="chapter"></div>
+    </ons-gesture-detector>
     <ons-bottom-toolbar modifier="aligned">
-      <div style="text-align: center">
-        <ons-toolbar-button id="previous-chapter" onclick="get_previous_chapter()"
-          style="position: absolute; left: 10px;" modifier="material outline">
-          <ons-icon icon="md-arrow-left"></ons-icon>
-        </ons-toolbar-button>
-        <span class="copyright">
-          &copy;2019 CCW
-        </span>
-        <ons-toolbar-button id="next-chapter" onclick="get_next_chapter()" style="position: absolute; right: 10px;"
-          modifier="material outline">
-          <ons-icon icon="md-arrow-right"></ons-icon>
-        </ons-toolbar-button>
-      </div>
+      <ons-row>
+        <ons-col width="40%">
+          <div style="margin-left: 10pt;margin-top: 2pt">
+            <ons-select id="book-version" onchange="setVersion(event)">
+              <option value="1599">Version:1599</option>
+              <option value="modern">Version:Modern</option>
+              <option value="sacred">Version:Sacred</option>
+            </ons-select>
+          </div>
+        </ons-col>
+        <ons-col width="30%">
+        </ons-col>
+        <ons-col width="30%">
+            <ons-select id="title-type" onchange="setTitle(event)">
+                <option value="name">Title:Normal</option>
+                <option value="abbreviation">Title:Code</option>
+              </ons-select>
+        </ons-col>
+      </ons-row>
     </ons-bottom-toolbar>
   </ons-page>
 
@@ -84,10 +82,9 @@
     <ons-page>
       <ons-toolbar>
         <div class="left">
-          <span class="modal-book-name"></span>
+          <span class="modal-title"></span>
         </div>
         <div class="center">
-          <span class="modal-title"></span>
         </div>
         <div class="right">
           <ons-toolbar-button onclick="manageBackButton()" modifier="material outline">
