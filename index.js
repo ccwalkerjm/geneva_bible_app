@@ -501,11 +501,11 @@ const gestureListner = function(event) {
   //if (event.type !== 'release') {
   if (
     accept_gesture &&
-    Math.abs(gesture.deltaX) > 6 &&
-    Math.abs(gesture.deltaY) < 0.1
+    Math.abs(gesture.deltaX) > 3 &&
+    Math.abs(gesture.deltaY) < 0.2
   ) {
     console.log("gesture:", event.type, event.gesture);
-    //accept_gesture = false;
+    accept_gesture = false;
     switch (event.type) {
       case "dragleft":
       case "swipeleft":
@@ -516,7 +516,7 @@ const gestureListner = function(event) {
         get_previous_chapter();
         break;
     }
-    //setTimeout(resetGesture, 1000);
+    setTimeout(resetGesture, 1000);
   }
   //}
 };
