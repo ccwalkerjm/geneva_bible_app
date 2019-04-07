@@ -151,9 +151,11 @@ const setVersion = function(e) {
 const showHelp = function() {
   _m_opts[_m_opts_easy].status = true;
   const messageObj = {
-    title: "Help",
+    title: "Help Guide",
     messageHTML:
-      "You can now swipe the chapter display left or right to change to the previous or next chapter. To learn about other features press the next. Otherwise press the cancel to exit.",
+      "<p>You can now <strong>swipe the screen</strong> horizontally to change to the previous or next chapter.</p>"+
+      "<p>To learn about other features press the next button. Otherwise press the cancel button to exit.</p>"+
+      "<p>You can always click the question mark at the top-left edge to return to the help Guide.</p>",
     buttonLabels: ["Cancel", "Next"]
   };
   ons.notification.confirm(messageObj).then(function(idx) {

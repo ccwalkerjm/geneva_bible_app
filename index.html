@@ -56,21 +56,24 @@
     </ons-gesture-detector>
     <ons-bottom-toolbar modifier="aligned">
       <ons-row>
-        <ons-col width="40%">
+        <ons-col width="30%">
           <div style="margin-left: 10pt;margin-top: 2pt">
             <ons-select id="book-version" onchange="setVersion(event)">
-              <option value="1599">Version:1599</option>
-              <option value="modern">Version:Modern</option>
-              <option value="sacred">Version:Sacred</option>
+              <option value="1599">1599</option>
+              <option value="modern">Modern</option>
+              <option value="sacred">Sacred</option>
             </ons-select>
           </div>
         </ons-col>
-        <ons-col width="30%">
+        <ons-col width="40%">
+          <div class="copyright">
+            &copy;2019 CCW 
+          </div>
         </ons-col>
         <ons-col width="30%">
             <ons-select id="title-type" onchange="setTitle(event)">
-                <option value="name">Title:Normal</option>
-                <option value="abbreviation">Title:Code</option>
+                <option value="name">Normal</option>
+                <option value="abbreviation">Code</option>
               </ons-select>
         </ons-col>
       </ons-row>
