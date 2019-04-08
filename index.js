@@ -5,6 +5,7 @@ const _sacredPhrases = {
   Jesus: "Yeshua",
   JESUS: "YESHUA",
   God: "Yahweh",
+  "Jehovah-jireh": "Yahweh-jireh",
   "Jesus Christ": "Yeshua, the Messiah",
   Christ: "Messiah"
 };
@@ -155,7 +156,7 @@ const showHelp = function() {
     messageHTML:
       "<p>You can now <strong>swipe the screen</strong> horizontally to change to the previous or next chapter.</p>" +
       "<p>To learn about other features press the next button. Otherwise press the cancel button to exit.</p>" +
-      "<p>You can always click the question mark at the top-left edge to return to the help Guide.</p>",
+      "<p>You can always tap the question mark at the top-left edge to return to the help Guide.</p>",
     buttonLabels: ["Cancel", "Next"]
   };
   ons.notification.confirm(messageObj).then(function(idx) {
@@ -285,6 +286,7 @@ function translate(chapterText) {
 
 //select Chapter
 function selectChapter(index) {
+  const changedChapter = _chapter_index === index;
   _chapter_index = index || 0; //_chapter_index;
   const $chapSelector = document.querySelector("#chapter-selector");
   $chapSelector.innerHTML = (_chapter_index + 1).toString();
@@ -295,8 +297,26 @@ function selectChapter(index) {
 
   chapterText = translate(chapterText);
 
-  $("#chapter").html(chapterText);
+  let verses = chapterText
+    .split("</p>")
+    .filter(x => x.slice(0, 3) === "<p>")
+    .map(x => x.slice(3).trim())
+    .filter(x => x);
 
+  const $chapter = document.getElementById("chapter");
+  $chapter.innerHTML = "";
+  for (let i = 0; i < verses.length; i++) {
+    const verse = verses[i];
+    const $verseItem = document.createElement("ons-list-item");
+    $verseItem.setAttribute("modifier", "tappable material nodivider");
+    $verseItem.innerHTML = `<p style="margin:0;padding:0;">${verse}</p>`;
+    $chapter.appendChild($verseItem);
+  }
+
+  //scroll to top
+  if (changedChapter) document.querySelector("ons-page").scrollTop = 0;
+
+  //set bbook/chapter keys in storage
   setLastChapter();
 
   if ($bibleModal.visible) {
@@ -517,7 +537,7 @@ const gestureListner = function(event) {
         break;
     }
     setTimeout(resetGesture, 500);
-  } 
+  }
 };
 
 ons.ready(function() {
