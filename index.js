@@ -153,8 +153,8 @@ const showHelp = function() {
   const messageObj = {
     title: "Help Guide",
     messageHTML:
-      "<p>You can now <strong>swipe the screen</strong> horizontally to change to the previous or next chapter.</p>"+
-      "<p>To learn about other features press the next button. Otherwise press the cancel button to exit.</p>"+
+      "<p>You can now <strong>swipe the screen</strong> horizontally to change to the previous or next chapter.</p>" +
+      "<p>To learn about other features press the next button. Otherwise press the cancel button to exit.</p>" +
       "<p>You can always click the question mark at the top-left edge to return to the help Guide.</p>",
     buttonLabels: ["Cancel", "Next"]
   };
@@ -501,26 +501,23 @@ function resetGesture() {
 const gestureListner = function(event) {
   const gesture = event.gesture;
   //if (event.type !== 'release') {
-  if (
-    accept_gesture &&
-    Math.abs(gesture.deltaX) > 3 &&
-    Math.abs(gesture.deltaY) < 0.2
-  ) {
-    console.log("gesture:", event.type, event.gesture);
+  const angle = Math.abs(gesture.angle);
+  const distance = Math.abs(gesture.distance);
+  if (accept_gesture && distance > 4) {
+    //console.log("gesture OK:", event.type, event.gesture);
     accept_gesture = false;
     switch (event.type) {
       case "dragleft":
       case "swipeleft":
-        get_next_chapter();
+        if (angle >= 150 && angle <= 210) get_next_chapter();
         break;
       case "dragright":
       case "swiperight":
-        get_previous_chapter();
+        if (angle >= 0 && angle <= 30) get_previous_chapter();
         break;
     }
-    setTimeout(resetGesture, 1000);
-  }
-  //}
+    setTimeout(resetGesture, 500);
+  } 
 };
 
 ons.ready(function() {
