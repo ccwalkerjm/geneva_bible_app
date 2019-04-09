@@ -32,74 +32,78 @@
 
 <body>
 
-  <ons-page id-"mainPage">
-    <ons-toolbar>
-      <div class="left">
-        <ons-toolbar-button id="help-selector" onclick="showHelp()" modifier="material outline">
-          <ons-icon icon="md-help"></ons-icon>
-        </ons-toolbar-button>
-      </div>
-      <div class="center">
-        <ons-toolbar-button id="book-selector" modifier="material outline">
-        </ons-toolbar-button>
-        <ons-toolbar-button id="chapter-selector" modifier="material outline">
-        </ons-toolbar-button>
-      </div>
-      <div class="right">
-        <ons-toolbar-button id="exit" onclick="manageBackButton()" modifier="material outline">
-          <ons-icon icon="md-close-circle"></ons-icon>
-        </ons-toolbar-button>
-      </div>
-    </ons-toolbar>
-    <ons-gesture-detector>
-      <ons-list id="chapter"></ons-list>
-    </ons-gesture-detector>
-    <ons-bottom-toolbar modifier="aligned">
-      <ons-row>
-        <ons-col width="30%">
-          <div style="margin-left: 10pt;margin-top: 2pt">
-            <ons-select id="book-version" onchange="setVersion(event)">
-              <option value="1599">1599</option>
-              <option value="modern">Modern</option>
-              <option value="sacred">Sacred</option>
-            </ons-select>
-          </div>
-        </ons-col>
-        <ons-col width="40%">
-          <div class="copyright">
-            &copy;2019 CCW 
-          </div>
-        </ons-col>
-        <ons-col width="30%">
-            <ons-select id="title-type" onchange="setTitle(event)">
-                <option value="name">Normal</option>
-                <option value="abbreviation">Code</option>
-              </ons-select>
-        </ons-col>
-      </ons-row>
-    </ons-bottom-toolbar>
-  </ons-page>
+  <ons-navigator swipeable id="myNavigator" page="mainPage.html"></ons-navigator>
 
-
-  <ons-modal id="bible-selection-modal" direction="up">
-    <ons-page>
+  <template id="mainPage.html">
+    <ons-page id="mainPage">
       <ons-toolbar>
         <div class="left">
-          <span class="modal-title"></span>
+          <ons-toolbar-button id="help-selector" onclick="showHelp()" modifier="material outline">
+            <ons-icon icon="md-help"></ons-icon>
+          </ons-toolbar-button>
         </div>
         <div class="center">
+          <ons-toolbar-button id="book-selector" modifier="material outline">
+          </ons-toolbar-button>
+          <ons-toolbar-button id="chapter-selector" modifier="material outline">
+          </ons-toolbar-button>
+        </div>
+        <div class="right">
+          <ons-toolbar-button id="exit" onclick="manageBackButton()" modifier="material outline">
+            <ons-icon icon="md-close-circle"></ons-icon>
+          </ons-toolbar-button>
+        </div>
+      </ons-toolbar>
+      <ons-gesture-detector>
+        <ons-list id="chapter"></ons-list>
+      </ons-gesture-detector>
+      <ons-bottom-toolbar modifier="aligned">
+        <ons-row>
+          <ons-col width="30%">
+            <div style="margin-left: 10pt;margin-top: 2pt">
+              <ons-select id="book-version" onchange="setVersion(event)">
+                <option>1599</option>
+                <option>Modern</option>
+                <option>Sacred</option>
+              </ons-select>
+            </div>
+          </ons-col>
+          <ons-col width="40%">
+            <div class="copyright">
+              &copy;2019 CCW
+            </div>
+          </ons-col>
+          <ons-col width="30%">
+            <ons-select id="title-type" onchange="setTitle(event)">
+              <option>Normal</option>
+              <option>Code</option>
+            </ons-select>
+          </ons-col>
+        </ons-row>
+      </ons-bottom-toolbar>
+    </ons-page>
+  </template>
+
+  <template id="bible-selection.html">
+    <!----ons-modal id="bible-selection-modal" direction="up"-->
+    <ons-page id="bible-selection">
+      <ons-toolbar>
+        <div class="left">
+            <span class="modal-title"></span>     
+        </div>
+        <div class="center">           
         </div>
         <div class="right">
           <ons-toolbar-button onclick="manageBackButton()" modifier="material outline">
             <ons-icon icon="md-long-arrow-return"></ons-icon>
           </ons-toolbar-button>
         </div>
-      </ons-toolbar>
-      <!-- <ons-list-title modifier="material">Select Book</ons-list-title> -->
+      </ons-toolbar>      
       <ons-list id="book-list"></ons-list>
       <ons-list id="chapter-list" style="display:none"></ons-list>
     </ons-page>
-  </ons-modal>
+    <!----/ons-modal-->
+  </template>
 
   <!--loader---->
   <ons-modal id="loader" direction="up">

@@ -27,18 +27,12 @@ let $loader;
 //bible variables
 let _books;
 let _book_index = 0;
-let _previous_book_index = 0;
 let _chapter_index = 0;
 let _current_book;
 let _englishWords = {};
 
 //options constants and variables
-const _m_opts_easy = 1;
-const _m_opts_english = 2;
-const _m_opts_sacred = 3;
-const _m_opts_ord = 4;
-const _m_opts_book = 5;
-let _m_opts = [];
+let _m_opts = {};
 
 //storage key for the last book/chapter
 const STORAGE_LAST_BOOK_CHAPTER_KEY = "courserv_geneva_bible_app_last_chapter";
@@ -62,95 +56,51 @@ function setOptions() {
 function getOptions() {
   const strObjs = localStorage.getItem(STORAGE_OPTIONS_KEY);
 
-  if (strObjs) {
+  try {
+    if (!strObjs) throw "null _m_opts";
     _m_opts = JSON.parse(strObjs);
-  } else {
-    _m_opts[_m_opts_easy] = {
-      type: "Help Mode",
-      status: true,
-      onText: "Turn Off!",
-      offText: "Turn On!"
-    };
-
-    _m_opts[_m_opts_english] = {
-      type: "English",
-      status: false,
-      onText: "Switch to Modern!",
-      offText: "Switch to Old!"
-    };
-
-    _m_opts[_m_opts_sacred] = {
-      type: "Sacred Names",
-      status: true,
-      onText: "Turn On",
-      offText: "Turn Off"
-    };
-
-    _m_opts[_m_opts_ord] = {
-      type: "Book Order",
-      status: true,
-      onText: "Switch to Alphabetical",
-      offText: "Switch to Traditional"
-    };
-
-    _m_opts[_m_opts_book] = {
-      type: "Book Title",
-      status: true,
-      onText: "Switch to Abbreviation",
-      offText: "Switch to Book Name"
+    const validity_check =
+      typeof _m_opts.helpMode === "boolean" &&
+      typeof _m_opts.version === "number" &&
+      typeof _m_opts.order === "boolean" &&
+      typeof _m_opts.title === "boolean";
+    if (!validity_check) {
+      throw "bad format";
+    }
+  } catch (e) {
+    _m_opts = {
+      helpMode: true,
+      version: 0, //old , modern, sacred
+      order: true, //true = tradional , false = alphabetical
+      title: true //true = normal , false = abbreviation
     };
   }
-  //set version select
+  //set version
   const versionSelector = document.querySelector("#book-version");
-  if (_m_opts[_m_opts_english].status && _m_opts[_m_opts_sacred].status)
-    versionSelector.selectedIndex = 0;
-  else if (!_m_opts[_m_opts_english].status && _m_opts[_m_opts_sacred].status)
-    versionSelector.selectedIndex = 1;
-  else versionSelector.selectedIndex = 2;
+  versionSelector.selectedIndex = _m_opts.version;
 
   //set book title
   const titleSelector = document.querySelector("#title-type");
-  if (_m_opts[_m_opts_book].status) titleSelector.selectedIndex = 0;
-  else titleSelector.selectedIndex = 1;
+  titleSelector.selectedIndex = _m_opts.title ? 0 : 1;
 
   //set help
-  if (_m_opts[_m_opts_easy].status) showHelp();
+  if (_m_opts.helpMode) showHelp();
 }
 
 const setTitle = function(e) {
-  switch (e.target.value) {
-    case "name":
-      _m_opts[_m_opts_book].status = true;
-      break;
-    case "abbreviation":
-      _m_opts[_m_opts_book].status = false;
-      break;
-  }
+  _m_opts.title = e.target.selectedIndex === 0;
   setOptions();
   selectBook(_book_index, _chapter_index);
 };
 
 const setVersion = function(e) {
-  switch (e.target.value) {
-    case "1599":
-      _m_opts[_m_opts_english].status = true;
-      _m_opts[_m_opts_sacred].status = true;
-      break;
-    case "modern":
-      _m_opts[_m_opts_english].status = false;
-      _m_opts[_m_opts_sacred].status = true;
-      break;
-    case "sacred":
-      _m_opts[_m_opts_english].status = false;
-      _m_opts[_m_opts_sacred].status = false;
-      break;
-  }
+  _m_opts.version = e.target.selectedIndex;
   setOptions();
   selectBook(_book_index, _chapter_index);
 };
 
 const showHelp = function() {
-  _m_opts[_m_opts_easy].status = true;
+  _m_opts.helpMode = true;
   const messageObj = {
     title: "Help Guide",
     messageHTML:
@@ -160,7 +110,7 @@ const showHelp = function() {
     buttonLabels: ["Cancel", "Next"]
   };
   ons.notification.confirm(messageObj).then(function(idx) {
-    _m_opts[_m_opts_easy].status = !!idx;
+    _m_opts.helpMode = !!idx;
     setOptions();
     if (idx == 0) return;
     nextPopover();
@@ -175,7 +125,7 @@ function getChapters(e) {
   $chapterList.style.display = "block";
   $chapterList.innerHTML = "";
   //const substring = "<li><a href";
-  const $modalTitle = $bibleModal.querySelector(".modal-title");
+  const $modalTitle = document.querySelector(".modal-title");
   $modalTitle.textContent = _books[_book_index].name;
 
   for (let i = 0; i < _books[_book_index].chapters; i++) {
@@ -185,11 +135,6 @@ function getChapters(e) {
     $chap_item.setAttribute("modifier", "tappable chevron");
     $chap_item.setAttribute("onclick", `selectChapter(${i})`);
     $chapterList.append($chap_item);
-  }
-  if (e && e.target) {
-    $bibleModal.show({
-      animation: "fade"
-    });
   }
 }
 
@@ -252,14 +197,14 @@ function addCapitalizedWords(words) {
 }
 
 function translate(chapterText) {
-  if (!_m_opts[_m_opts_english].status) {
+  if (_m_opts.version > 0) {
     //change to modern words
     chapterText = replaceAllBySizeDescending(
       chapterText,
       addCapitalizedWords(_englishWords)
     );
 
-    if (!_m_opts[_m_opts_sacred].status) {
+    if (_m_opts.version === 2) {
       //add capitalized first letter phrases
       let ignorePhrases = addCapitalizedWords(_ignoreSacredPhrases);
       let swappedIgnoreValues = {};
@@ -269,14 +214,10 @@ function translate(chapterText) {
         ignorePhrases[key] = value;
         swappedIgnoreValues[value] = key;
       }
-      console.log("ignore phrases", ignorePhrases);
-      console.log("swapped phrases", swappedIgnoreValues);
       //mark ignore phrases
       chapterText = replaceAllWithList(chapterText, ignorePhrases);
-
       //_sacredPhrases
       chapterText = replaceAllWithList(chapterText, _sacredPhrases);
-
       //reverse ignore phrases
       chapterText = replaceAllWithList(chapterText, swappedIgnoreValues, true);
     }
@@ -286,58 +227,103 @@ function translate(chapterText) {
 
 //select Chapter
 function selectChapter(index) {
-  const changedChapter = _chapter_index === index;
-  _chapter_index = index || 0; //_chapter_index;
-  const $chapSelector = document.querySelector("#chapter-selector");
-  $chapSelector.innerHTML = (_chapter_index + 1).toString();
+  const doSelection = function() {
+    _chapter_index = index || 0; //_chapter_index;
 
-  const encoded_text = _current_book[_chapter_index];
+    //set book title
+    const $bookSelector = document.querySelector("#book-selector");
+    $bookSelector.innerHTML = _m_opts.title
+      ? _books[_book_index].name
+      : _books[_book_index].abbreviation;
 
-  let chapterText = atob(encoded_text);
+    //set chapter no
+    const $chapSelector = document.querySelector("#chapter-selector");
+    $chapSelector.innerHTML = (_chapter_index + 1).toString();
 
-  chapterText = translate(chapterText);
+    const encoded_text = _current_book[_chapter_index];
 
-  let verses = chapterText
-    .split("</p>")
-    .filter(x => x.slice(0, 3) === "<p>")
-    .map(x => x.slice(3).trim())
-    .filter(x => x);
+    let chapterText = atob(encoded_text);
 
-  const $chapter = document.getElementById("chapter");
-  $chapter.innerHTML = "";
-  for (let i = 0; i < verses.length; i++) {
-    const verse = verses[i];
-    const $verseItem = document.createElement("ons-list-item");
-    $verseItem.setAttribute("modifier", "tappable material nodivider");
-    $verseItem.innerHTML = `<p style="margin:0;padding:0;">${verse}</p>`;
-    $chapter.appendChild($verseItem);
-  }
+    chapterText = translate(chapterText);
 
-  //scroll to top
-  if (changedChapter) document.querySelector("ons-page").scrollTop = 0;
+    let verses = chapterText
+      .split("</p>")
+      .filter(x => x.slice(0, 3) === "<p>")
+      .map(x => x.slice(3).trim())
+      .filter(x => x);
 
-  //set bbook/chapter keys in storage
-  setLastChapter();
+    const $chapter = document.getElementById("chapter");
+    $chapter.innerHTML = "";
+    for (let i = 0; i < verses.length; i++) {
+      const verse = verses[i].replace(/<span[^>]*>.*?<\/span>/, "");
+      const $verseItem = document.createElement("ons-list-item");
+      $verseItem.setAttribute("modifier", "material nodivider");
+      const verseP = document.createElement("p");
+      verseP.setAttribute("class", "verse");
+      const verseNo = document.createElement("label");
+      verseNo.setAttribute("class", "verse");
+      verseNo.setAttribute("tappable", "true");
+      verseNo.addEventListener("click", copyToClip);
+      verseNo.innerHTML = `${i + 1}&nbsp;`;
+      verseP.appendChild(verseNo);
 
-  if ($bibleModal.visible) {
-    $bibleModal.hide({
-      animation: "fade"
-    });
+      var verseTxtNode = document.createTextNode(verse); // Create a text node
+      verseP.appendChild(verseTxtNode);
+
+      $verseItem.appendChild(verseP); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
+      $chapter.appendChild($verseItem);
+    }
+
+    //scroll to top
+    const [lastBookIdx, lastChapterIdx] = getLastChapter();
+    const changedChapter =
+      lastBookIdx === _book_index && lastChapterIdx === _chapter_index;
+    if (!changedChapter) document.querySelector("ons-page").scrollTop = 0;
+
+    //set bbook/chapter keys in storage
+    setLastChapter();
+  };
+  if (_currentPageId === "bible-selection")
+    _navigator.popPage().then(() => doSelection());
+  else doSelection();
+}
+
+function getVersionName() {
+  switch (_m_opts.version) {
+    case 0:
+      return "Geneva 1599";
+    case 1:
+      return "CCW Geneva Modern English Version";
+    case 2:
+      return "CCW Geneva Sacred Name Version";
   }
 }
+
+const copyToClip = function(e) {
+  // book - version;
+  console.log("verse", e);
+  const copiedText = `${_books[_book_index].name} ${_chapter_index +
+    1} (${getVersionName()})\n${e.target.parentNode.innerText}`;
+  ons.notification.toast(`Verse: ${e.target.innerText} Copied!`, {
+    timeout: 5000,
+    animation: "lift"
+  });
+  navigator.clipboard
+    .writeText(copiedText)
+    .then(() => {
+      console.log("copied verse", copiedText);
+    })
+    .catch(err => {
+      // This can happen if the user denies clipboard permissions:
+      console.error("Could not copy text: ", err);
+    });
+};
 
 let _current_book_code;
 
 //select Book
 function selectBook(book_index, chapter_index) {
-  const $bookSelector = document.querySelector("#book-selector");
-
-  _previous_book_index = _book_index; ///set previous book marker
   _book_index = book_index;
-
-  $bookSelector.innerHTML = _m_opts[_m_opts_book].status
-    ? _books[_book_index].name
-    : _books[_book_index].abbreviation;
 
   let book_code = _books[_book_index].code;
 
@@ -361,19 +347,19 @@ function selectBook(book_index, chapter_index) {
 }
 
 //list the Books
-function populateBooks() {
+function populateBooks(e) {
   const $chapterList = document.querySelector("#chapter-list");
   $chapterList.style.display = "none";
 
   const $booklist = document.querySelector("#book-list");
   $booklist.style.display = "block";
   $booklist.innerHTML = "";
-  const $modalTitle = $bibleModal.querySelector(".modal-title");
+  const $modalTitle = document.querySelector(".modal-title");
   $modalTitle.textContent = "Books";
 
   let book_indexes = JSON.parse(JSON.stringify(_books));
 
-  if (!_m_opts[_m_opts_ord].status) {
+  if (!_m_opts.order) {
     function compare(a, b) {
       if (a.name < b.name) {
         return -1;
@@ -390,10 +376,7 @@ function populateBooks() {
   for (let i = 0; i < book_indexes.length; i++) {
     const x_book = book_indexes[i];
     const book_index = _books.findIndex(x => x.code === x_book.code);
-    if (
-      _m_opts[_m_opts_ord].status &&
-      (book_index === 0 || x_book.code === _MATTHEW_CODE)
-    ) {
+    if (_m_opts.order && (book_index === 0 || x_book.code === _MATTHEW_CODE)) {
       const $header = document.createElement("ons-list-header");
       $header.textContent = `${book_index === 0 ? "Old" : "NEW"} Testament`;
       $booklist.append($header);
@@ -405,25 +388,21 @@ function populateBooks() {
     $book_item.innerText = x_book.name;
     $booklist.append($book_item);
   }
-
-  if (!$bibleModal.visible) {
-    $bibleModal.show({
-      animation: "fade"
-    });
-  }
 }
 
 //close modal
 const manageBackButton = function() {
-  if (!$bibleModal.visible) return window.close();
-  const $booklist = document.querySelector("#book-list");
-  if ($booklist.style.display === "none") {
-    populateBooks();
+  if (_currentPageId === "bible-selection") {
+    const $booklist = document.querySelector("#book-list");
+    if ($booklist.style.display === "none") {
+      populateBooks();
+    } else {
+      _navigator.popPage().then(function() {
+        [_book_index, _chapter_index] = getLastChapter();
+      });
+    }
   } else {
-    selectBook(_previous_book_index);
-    $bibleModal.hide({
-      animation: "fade"
-    });
+    window.close();
   }
 };
 
@@ -469,7 +448,7 @@ const helpTargets = [
 ];
 
 var hidePopover = function() {
-  _m_opts[_m_opts_easy].status = false;
+  _m_opts.helpMode = false;
   setOptions();
   var popover = document.getElementById("popover");
   popover.hide();
@@ -504,11 +483,9 @@ function getLastChapter() {
     const lastChap = localStorage.getItem(STORAGE_LAST_BOOK_CHAPTER_KEY);
     if (!lastChap) throw new Error("null found");
     const obj = JSON.parse(lastChap);
-    _book_index = obj.book_index;
-    _chapter_index = obj.chapter_index;
+    return [obj.book_index, obj.chapter_index];
   } catch (e) {
-    _book_index = 0;
-    _chapter_index = 0;
+    return [0, 0];
   }
 }
 
@@ -523,37 +500,48 @@ const gestureListner = function(event) {
   //if (event.type !== 'release') {
   const angle = Math.abs(gesture.angle);
   const distance = Math.abs(gesture.distance);
-  if (accept_gesture && distance > 4) {
-    //console.log("gesture OK:", event.type, event.gesture);
-    accept_gesture = false;
-    switch (event.type) {
-      case "dragleft":
-      case "swipeleft":
-        if (angle >= 150 && angle <= 210) get_next_chapter();
-        break;
-      case "dragright":
-      case "swiperight":
-        if (angle >= 0 && angle <= 30) get_previous_chapter();
-        break;
-    }
-    setTimeout(resetGesture, 500);
+  //if (accept_gesture && distance > 4) {
+  //console.log("gesture OK:", event.type, event.gesture);
+  //accept_gesture = false;
+  switch (event.type) {
+    //case "dragleft":
+    case "swipeleft":
+      //if (angle >= 150 && angle <= 210)
+      get_next_chapter();
+      break;
+    //case "dragright":
+    case "swiperight":
+      //if (angle >= 0 && angle <= 30)
+      get_previous_chapter();
+      break;
+    case "doubletap":
+      const maxWidth = document.querySelector("ons-page").offsetWidth;
+      const tapWidth = gesture.center.pageX;
+
+      if (tapWidth < 0.2 * maxWidth) get_previous_chapter();
+      if (tapWidth > 0.8 * maxWidth) get_next_chapter();
+
+      console.log("mainpage width:", maxWidth);
+      console.log("gesture tapWidth", tapWidth);
   }
+  //setTimeout(resetGesture, 500);
+  //}
 };
 
+const gestureEvents = [
+  //"release",
+  "dragleft",
+  "dragright",
+  "swipeleft",
+  "swiperight",
+  "doubletap",
+  "tap"
+];
+
+let _currentPageId;
+let _navigator;
+
 ons.ready(function() {
-  var gestureEvents = [
-    //"release",
-    "dragleft",
-    "dragright",
-    "swipeleft",
-    "swiperight"
-  ];
-  const $chapter = document.querySelector("#chapter");
-
-  for (let i in gestureEvents) {
-    $chapter.addEventListener(gestureEvents[i], gestureListner, false);
-  }
-
   const process_bible_data = function(receivedWords) {
     try {
       if (receivedWords && typeof receivedWords === "object") {
@@ -578,27 +566,71 @@ ons.ready(function() {
       getOptions();
       _books = books;
       $bookSelector = document.querySelector("#book-selector");
-      $bookSelector.addEventListener("click", populateBooks);
+      $bookSelector.addEventListener(
+        "click", ////populateBooks
+        function(e) {
+          _navigator
+            .pushPage("bible-selection.html", {
+              data: { type: "book" }
+            })
+            .then();
+        }
+      );
       const $chapSelector = document.querySelector("#chapter-selector");
-      $chapSelector.addEventListener("click", getChapters);
+      $chapSelector.addEventListener(
+        "click", //getChapters);
+        function(e) {
+          _navigator
+            .pushPage("bible-selection.html", {
+              data: { type: "chapter" }
+            })
+            .then();
+        }
+      );
 
       //setup backbutton management
-      ons.disableDeviceBackButtonHandler();
-      $bibleModal = document.querySelector("#bible-selection-modal");
-      $bibleModal.onDeviceBackButton = manageBackButton;
-      ons.setDefaultDeviceBackButtonListener(manageBackButton);
-      getLastChapter();
+      //ons.disableDeviceBackButtonHandler();
+      //$bibleModal = document.querySelector("#bible-selection-modal");
+      //$bibleModal.onDeviceBackButton = manageBackButton;
+      //ons.setDefaultDeviceBackButtonListener(manageBackButton);
+      [_book_index, _chapter_index] = getLastChapter();
       selectBook(_book_index, _chapter_index);
     }).fail(function() {
       ons.notification.alert("Network Problem Detected!");
     });
   };
 
-  $loader = document.querySelector("#loader");
-  $loader.show();
-  $.get("english.json", function(englishWords) {
-    process_bible_data(englishWords);
-  }).fail(function() {
-    process_bible_data();
+  _navigator = document.querySelector("#myNavigator");
+
+  //manage navigator page switching
+  document.addEventListener("init", function(event) {
+    var page = event.target;
+    _currentPageId = page.id;
+    if (_currentPageId === "mainPage") {
+      const $chapter = document.querySelector("#chapter");
+      for (let i in gestureEvents) {
+        $chapter.addEventListener(gestureEvents[i], gestureListner, false);
+      }
+
+      $loader = document.querySelector("#loader");
+      $loader.show();
+      $.get("english.json", function(englishWords) {
+        process_bible_data(englishWords);
+      }).fail(function() {
+        process_bible_data();
+      });
+
+      //page.querySelector('#push-button').onclick = function() {
+      //  document.querySelector('#myNavigator').pushPage('page2.html', {data: {title: 'Page 2'}});
+      //};
+    } else if (_currentPageId === "bible-selection") {
+      //page.querySelector('ons-toolbar .center').innerHTML = page.data.title;
+      switch (page.data.type) {
+        case "book":
+          return populateBooks();
+        case "chapter":
+          return getChapters();
+      }
+    }
   });
 });
