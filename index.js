@@ -120,6 +120,12 @@ const setVersion = function(e) {
   selectBook(_book_index, _chapter_index);
 };
 
+const helpGuideSelector = function(e){
+   const idx = e.target.selectedIndex;
+   $('.help-options').not(`:nth-child(${idx})`).hide();
+   $('.help-options').eq(idx).show();
+};
+
 const showHelp = function() {
   _m_opts.helpMode = true;
   const messageObj = {

@@ -92,10 +92,10 @@
           <span class="modal-title"></span>
         </div>
         <div class="center">
-            <ons-select id="book-order" style="font:100" modifier="material" onchange="setOrder(event)">
-                <option>Traditional</option>
-                <option>Alphabetic</option>
-              </ons-select>
+          <ons-select id="book-order" style="font:100" modifier="material" onchange="setOrder(event)">
+            <option>Traditional</option>
+            <option>Alphabetic</option>
+          </ons-select>
         </div>
         <div class="right">
           <ons-toolbar-button onclick="manageBackButton()" modifier="material outline">
@@ -112,13 +112,36 @@
 
   <template id="helpNotes">
     <div>
-      <p>To change to the next or previous chapter, you can either <strong>SWIPE</strong> or <strong>DOUBLE TAP</strong></p>
-      <p>To change to the <strong>previous chapter</strong>. Either Swipe to the Right or Double Tap on the Left side of
-        the screen.</p>
-      <p>To change to the <strong>next chapter</strong>. Either Swipe to the Left or Double Tap on the Right side of the
-        screen.</p>
-      <p>To learn about other features press the <strong>next button</strong> below. Otherwise press the <strong>cancel button</strong> to exit.</p>
-      <p>You can always tap the <strong>question mark</strong> at the top-left edge to return to the help Guide.</p>
+      <hr />
+      <label>Select To Learn More</label>
+      <ons-select id="help-id" onchange="helpGuideSelector(event)" modifier="material">
+        <option>How to Get Help</option>
+        <option>How to Select Next Chapter</option>
+        <option>How to Select Previous Chapter</option>
+      </ons-select>
+      <div class="help-options">
+        <p>To learn about other features press the <strong>next button</strong> below. Otherwise press the
+          <strong>cancel
+            button</strong> to exit.</p>
+        <p>You can always tap the <strong>question mark</strong> at the top-left edge to return to the help Guide.</p>
+      </div>
+      <div class="help-options" style="display: none">
+        <p>To change to the next or previous chapter, you can either <strong>SWIPE</strong> or <strong>DOUBLE
+            TAP</strong>
+        </p>
+        <p>To change to the <strong>next chapter</strong>. Either Swipe to the Left or Double Tap on the Right side of
+          the
+          screen.</p>
+      </div>
+      <div class="help-options" style="display: none">
+        <p>To change to the next or previous chapter, you can either <strong>SWIPE</strong> or <strong>DOUBLE
+            TAP</strong>
+        </p>
+        <p>To change to the <strong>previous chapter</strong>. Either Swipe to the Right or Double Tap on the Left side
+          of
+          the screen.</p>
+      </div>
+
     </div>
   </template>
 
