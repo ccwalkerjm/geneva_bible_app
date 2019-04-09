@@ -19,8 +19,23 @@ const _ignoreSacredPhrases = {
   "the God": ""
 };
 
+const GestureEvents = [
+  //"release",
+  "dragleft",
+  "dragright",
+  "swipeleft",
+  "swiperight",
+  "doubletap",
+  "tap"
+];
+
+let _currentPageId;
+let _navigator;
+
+const MainPage = "mainPage";
+const SelectionPage = "bible-selection";
+
 //key components
-let $bibleModal;
 let $bookSelector;
 let $loader;
 
@@ -87,6 +102,12 @@ function getOptions() {
   if (_m_opts.helpMode) showHelp();
 }
 
+const setOrder = function(e) {
+  _m_opts.order = e.target.selectedIndex === 0;
+  setOptions();
+  populateBooks(true);
+};
+
 const setTitle = function(e) {
   _m_opts.title = e.target.selectedIndex === 0;
   setOptions();
@@ -103,10 +124,7 @@ const showHelp = function() {
   _m_opts.helpMode = true;
   const messageObj = {
     title: "Help Guide",
-    messageHTML:
-      "<p>You can now <strong>swipe the screen</strong> horizontally to change to the previous or next chapter.</p>" +
-      "<p>To learn about other features press the next button. Otherwise press the cancel button to exit.</p>" +
-      "<p>You can always tap the question mark at the top-left edge to return to the help Guide.</p>",
+    messageHTML: document.querySelector("#helpNotes").innerHTML,
     buttonLabels: ["Cancel", "Next"]
   };
   ons.notification.confirm(messageObj).then(function(idx) {
@@ -119,6 +137,8 @@ const showHelp = function() {
 
 //list chapters for book
 function getChapters(e) {
+  const $bookOrder = document.querySelector("#book-order");
+  $bookOrder.style.display = "none";
   const $booklist = document.querySelector("#book-list");
   $booklist.style.display = "none";
   const $chapterList = document.querySelector("#chapter-list");
@@ -283,8 +303,11 @@ function selectChapter(index) {
     //set bbook/chapter keys in storage
     setLastChapter();
   };
-  if (_currentPageId === "bible-selection")
-    _navigator.popPage().then(() => doSelection());
+  if (_currentPageId === SelectionPage)
+    _navigator.popPage().then(function() {
+      _currentPageId = MainPage;
+      doSelection();
+    });
   else doSelection();
 }
 
@@ -347,7 +370,12 @@ function selectBook(book_index, chapter_index) {
 }
 
 //list the Books
-function populateBooks(e) {
+function populateBooks(selectOrderTriggered) {
+  //set select order element
+  const $bookOrder = document.querySelector("#book-order");
+  $bookOrder.style.display = "inline";
+  if (!selectOrderTriggered) $bookOrder.selectedIndex = _m_opts.order ? 0 : 1;
+
   const $chapterList = document.querySelector("#chapter-list");
   $chapterList.style.display = "none";
 
@@ -392,12 +420,13 @@ function populateBooks(e) {
 
 //close modal
 const manageBackButton = function() {
-  if (_currentPageId === "bible-selection") {
+  if (_currentPageId === SelectionPage) {
     const $booklist = document.querySelector("#book-list");
     if ($booklist.style.display === "none") {
       populateBooks();
     } else {
       _navigator.popPage().then(function() {
+        _currentPageId = MainPage;
         [_book_index, _chapter_index] = getLastChapter();
       });
     }
@@ -442,7 +471,7 @@ const helpTargets = [
     target: "#title-type",
     message:
       "Set Book Title Type; whether the standard name or the abbreviation(code)",
-    header: "Title Title",
+    header: "Chapter Title",
     direction: "up"
   }
 ];
@@ -528,90 +557,69 @@ const gestureListner = function(event) {
   //}
 };
 
-const gestureEvents = [
-  //"release",
-  "dragleft",
-  "dragright",
-  "swipeleft",
-  "swiperight",
-  "doubletap",
-  "tap"
-];
+const process_bible_data = function(receivedWords) {
+  try {
+    if (receivedWords && typeof receivedWords === "object") {
+      //save downloaded words  ---this is not cached.
+      localStorage.setItem(
+        STORAGE_ENGLISH_WORDS_KEY,
+        JSON.stringify(receivedWords)
+      );
+    }
+    //get saved words regardless
+    const savedWords = localStorage.getItem(STORAGE_ENGLISH_WORDS_KEY);
+    if (!savedWords) throw new Error("Null Saved Words");
+    _englishWords = JSON.parse(savedWords);
+  } catch (e) {
+    console.log("english word error:", e);
+    //assumed empty list
+    _englishWords = {};
+  }
 
-let _currentPageId;
-let _navigator;
+  $.get("books_complete.json", function(books) {
+    $loader.hide();
+    getOptions();
+    _books = books;
+    $bookSelector = document.querySelector("#book-selector");
+    $bookSelector.addEventListener("click", function(e) {
+      _navigator
+        .pushPage("bible-selection.html", {
+          data: { type: "book" }
+        })
+        .then();
+    });
+    const $chapSelector = document.querySelector("#chapter-selector");
+    $chapSelector.addEventListener("click", function(e) {
+      _navigator
+        .pushPage("bible-selection.html", {
+          data: { type: "chapter" }
+        })
+        .then();
+    });
+
+    [_book_index, _chapter_index] = getLastChapter();
+    selectBook(_book_index, _chapter_index);
+  }).fail(function() {
+    ons.notification.alert("Network Problem Detected!");
+  });
+};
 
 ons.ready(function() {
-  const process_bible_data = function(receivedWords) {
-    try {
-      if (receivedWords && typeof receivedWords === "object") {
-        //save downloaded words  ---this is not cached.
-        localStorage.setItem(
-          STORAGE_ENGLISH_WORDS_KEY,
-          JSON.stringify(receivedWords)
-        );
-      }
-      //get saved words regardless
-      const savedWords = localStorage.getItem(STORAGE_ENGLISH_WORDS_KEY);
-      if (!savedWords) throw new Error("Null Saved Words");
-      _englishWords = JSON.parse(savedWords);
-    } catch (e) {
-      console.log("english word error:", e);
-      //assumed empty list
-      _englishWords = {};
-    }
-
-    $.get("books_complete.json", function(books) {
-      $loader.hide();
-      getOptions();
-      _books = books;
-      $bookSelector = document.querySelector("#book-selector");
-      $bookSelector.addEventListener(
-        "click", ////populateBooks
-        function(e) {
-          _navigator
-            .pushPage("bible-selection.html", {
-              data: { type: "book" }
-            })
-            .then();
-        }
-      );
-      const $chapSelector = document.querySelector("#chapter-selector");
-      $chapSelector.addEventListener(
-        "click", //getChapters);
-        function(e) {
-          _navigator
-            .pushPage("bible-selection.html", {
-              data: { type: "chapter" }
-            })
-            .then();
-        }
-      );
-
-      //setup backbutton management
-      //ons.disableDeviceBackButtonHandler();
-      //$bibleModal = document.querySelector("#bible-selection-modal");
-      //$bibleModal.onDeviceBackButton = manageBackButton;
-      //ons.setDefaultDeviceBackButtonListener(manageBackButton);
-      [_book_index, _chapter_index] = getLastChapter();
-      selectBook(_book_index, _chapter_index);
-    }).fail(function() {
-      ons.notification.alert("Network Problem Detected!");
-    });
-  };
-
-  _navigator = document.querySelector("#myNavigator");
-
+  _navigator = document.querySelector("#bible-navigator");
   //manage navigator page switching
+  /*  document.addEventListener("show", function(event) {
+    if (_currentPageId != event.target.id) _currentPageId = event.target.id;
+  }); */
   document.addEventListener("init", function(event) {
-    var page = event.target;
-    _currentPageId = page.id;
-    if (_currentPageId === "mainPage") {
+    _currentPageId = event.target.id;
+    const pageData = event.target.data;
+    if (_currentPageId === MainPage) {
+      //set gesture events
       const $chapter = document.querySelector("#chapter");
-      for (let i in gestureEvents) {
-        $chapter.addEventListener(gestureEvents[i], gestureListner, false);
+      for (let i in GestureEvents) {
+        $chapter.addEventListener(GestureEvents[i], gestureListner, false);
       }
-
+      //load bible Meta json
       $loader = document.querySelector("#loader");
       $loader.show();
       $.get("english.json", function(englishWords) {
@@ -619,13 +627,9 @@ ons.ready(function() {
       }).fail(function() {
         process_bible_data();
       });
-
-      //page.querySelector('#push-button').onclick = function() {
-      //  document.querySelector('#myNavigator').pushPage('page2.html', {data: {title: 'Page 2'}});
-      //};
-    } else if (_currentPageId === "bible-selection") {
-      //page.querySelector('ons-toolbar .center').innerHTML = page.data.title;
-      switch (page.data.type) {
+    } else if (_currentPageId === SelectionPage) {
+      //
+      switch (pageData.type) {
         case "book":
           return populateBooks();
         case "chapter":
