@@ -120,10 +120,12 @@ const setVersion = function(e) {
   selectBook(_book_index, _chapter_index);
 };
 
-const helpGuideSelector = function(e){
-   const idx = e.target.selectedIndex;
-   $('.help-options').hide();
-   $('.help-options').eq(idx).show();
+const helpGuideSelector = function(e) {
+  const idx = e.target.selectedIndex;
+  $(".help-options").hide();
+  $(".help-options")
+    .eq(idx)
+    .show();
 };
 
 const showHelp = function() {
@@ -307,11 +309,8 @@ function selectChapter(index) {
 
   //set bbook/chapter keys in storage
   setLastChapter();
-
   if (_currentPageId === SelectionPage)
-    _navigator.popPage().then(function() {
-      _currentPageId = MainPage;      
-    });
+    _navigator.popPage();
 }
 
 function getVersionName() {
@@ -428,10 +427,8 @@ const manageBackButton = function() {
     if ($booklist.style.display === "none") {
       populateBooks();
     } else {
-      _navigator.popPage().then(function() {
-        _currentPageId = MainPage;
-        [_book_index, _chapter_index] = getLastChapter();
-      });
+      [_book_index, _chapter_index] = getLastChapter();      
+      _navigator.popPage();
     }
   } else {
     window.close();
@@ -610,9 +607,9 @@ const process_bible_data = function(receivedWords) {
 ons.ready(function() {
   _navigator = document.querySelector("#bible-navigator");
   //manage navigator page switching
-  /*  document.addEventListener("show", function(event) {
-    if (_currentPageId != event.target.id) _currentPageId = event.target.id;
-  }); */
+  document.addEventListener("prepop", function(event) {
+    _currentPageId = event.enterPage.id; //set new page
+  });
   document.addEventListener("init", function(event) {
     _currentPageId = event.target.id;
     const pageData = event.target.data;
