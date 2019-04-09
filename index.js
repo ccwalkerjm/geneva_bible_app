@@ -122,7 +122,7 @@ const setVersion = function(e) {
 
 const helpGuideSelector = function(e){
    const idx = e.target.selectedIndex;
-   $('.help-options').not(`:nth-child(${idx})`).hide();
+   $('.help-options').hide();
    $('.help-options').eq(idx).show();
 };
 
