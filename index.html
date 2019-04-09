@@ -111,13 +111,12 @@
 
 
   <template id="helpNotes">
-    <div>
-      <hr />
-      <label>Select To Learn More</label>
+    <ons-card>
       <ons-select id="help-id" onchange="helpGuideSelector(event)" modifier="material">
-        <option>How to Get Help</option>
-        <option>How to Select Next Chapter</option>
-        <option>How to Select Previous Chapter</option>
+        <option>Select here</option>
+        <option>Select Next Chapter</option>
+        <option>Select Previous Chapter</option>
+        <option>Select a Verse</option>
       </ons-select>
       <div class="help-options">
         <p>To learn about other features press the <strong>next button</strong> below. Otherwise press the
@@ -138,11 +137,19 @@
             TAP</strong>
         </p>
         <p>To change to the <strong>previous chapter</strong>. Either Swipe to the Right or Double Tap on the Left side
-          of
-          the screen.</p>
+          of the screen.</p>
       </div>
-
-    </div>
+      <div class="help-options" style="display: none">
+        <p>To select verse, simply tap the verse no.</strong>
+        </p>
+        <p>The verse will be copied so that you can use it in any application,
+          whether WhatsApp, Gmail etc.
+        </p>
+        <p>
+          Once copied, goto the concerned application and execute the paste action.
+        </p>
+      </div>
+    </ons-card>
   </template>
 
   <!--loader---->
