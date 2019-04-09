@@ -247,68 +247,65 @@ function translate(chapterText) {
 
 //select Chapter
 function selectChapter(index) {
-  const doSelection = function() {
-    _chapter_index = index || 0; //_chapter_index;
+  _chapter_index = index || 0; //_chapter_index;
 
-    //set book title
-    const $bookSelector = document.querySelector("#book-selector");
-    $bookSelector.innerHTML = _m_opts.title
-      ? _books[_book_index].name
-      : _books[_book_index].abbreviation;
+  //set book title
+  const $bookSelector = document.querySelector("#book-selector");
+  $bookSelector.innerHTML = _m_opts.title
+    ? _books[_book_index].name
+    : _books[_book_index].abbreviation;
 
-    //set chapter no
-    const $chapSelector = document.querySelector("#chapter-selector");
-    $chapSelector.innerHTML = (_chapter_index + 1).toString();
+  //set chapter no
+  const $chapSelector = document.querySelector("#chapter-selector");
+  $chapSelector.innerHTML = (_chapter_index + 1).toString();
 
-    const encoded_text = _current_book[_chapter_index];
+  const encoded_text = _current_book[_chapter_index];
 
-    let chapterText = atob(encoded_text);
+  let chapterText = atob(encoded_text);
 
-    chapterText = translate(chapterText);
+  chapterText = translate(chapterText);
 
-    let verses = chapterText
-      .split("</p>")
-      .filter(x => x.slice(0, 3) === "<p>")
-      .map(x => x.slice(3).trim())
-      .filter(x => x);
+  let verses = chapterText
+    .split("</p>")
+    .filter(x => x.slice(0, 3) === "<p>")
+    .map(x => x.slice(3).trim())
+    .filter(x => x);
 
-    const $chapter = document.getElementById("chapter");
-    $chapter.innerHTML = "";
-    for (let i = 0; i < verses.length; i++) {
-      const verse = verses[i].replace(/<span[^>]*>.*?<\/span>/, "");
-      const $verseItem = document.createElement("ons-list-item");
-      $verseItem.setAttribute("modifier", "material nodivider");
-      const verseP = document.createElement("p");
-      verseP.setAttribute("class", "verse");
-      const verseNo = document.createElement("label");
-      verseNo.setAttribute("class", "verse");
-      verseNo.setAttribute("tappable", "true");
-      verseNo.addEventListener("click", copyToClip);
-      verseNo.innerHTML = `${i + 1}&nbsp;`;
-      verseP.appendChild(verseNo);
+  const $chapter = document.getElementById("chapter");
+  $chapter.innerHTML = "";
+  for (let i = 0; i < verses.length; i++) {
+    const verse = verses[i].replace(/<span[^>]*>.*?<\/span>/, "");
+    const $verseItem = document.createElement("ons-list-item");
+    $verseItem.setAttribute("modifier", "material nodivider");
+    const verseP = document.createElement("p");
+    verseP.setAttribute("class", "verse");
+    const verseNo = document.createElement("label");
+    verseNo.setAttribute("class", "verse");
+    verseNo.setAttribute("tappable", "true");
+    verseNo.addEventListener("click", copyToClip);
+    verseNo.innerHTML = `${i + 1}&nbsp;`;
+    verseP.appendChild(verseNo);
 
-      var verseTxtNode = document.createTextNode(verse); // Create a text node
-      verseP.appendChild(verseTxtNode);
+    var verseTxtNode = document.createTextNode(verse); // Create a text node
+    verseP.appendChild(verseTxtNode);
 
-      $verseItem.appendChild(verseP); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
-      $chapter.appendChild($verseItem);
-    }
+    $verseItem.appendChild(verseP); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
+    $chapter.appendChild($verseItem);
+  }
 
-    //scroll to top
-    const [lastBookIdx, lastChapterIdx] = getLastChapter();
-    const changedChapter =
-      lastBookIdx === _book_index && lastChapterIdx === _chapter_index;
-    if (!changedChapter) document.querySelector("ons-page").scrollTop = 0;
+  //scroll to top
+  const [lastBookIdx, lastChapterIdx] = getLastChapter();
+  const changedChapter =
+    lastBookIdx === _book_index && lastChapterIdx === _chapter_index;
+  if (!changedChapter) document.querySelector("ons-page").scrollTop = 0;
 
-    //set bbook/chapter keys in storage
-    setLastChapter();
-  };
+  //set bbook/chapter keys in storage
+  setLastChapter();
+
   if (_currentPageId === SelectionPage)
     _navigator.popPage().then(function() {
-      _currentPageId = MainPage;
-      doSelection();
+      _currentPageId = MainPage;      
     });
-  else doSelection();
 }
 
 function getVersionName() {
