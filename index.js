@@ -86,9 +86,6 @@ function getOptions() {
   //set book title
   const titleSelector = document.querySelector("#title-type");
   titleSelector.selectedIndex = _m_opts.title ? 0 : 1;
-
-  //set help
-  if (_m_opts.helpMode) showHelp();
 }
 
 const setOrder = function(e) {
@@ -295,14 +292,15 @@ function selectChapter(index) {
 
 function scrollToTop(newPage) {
   //scroll to top
-  const [lastBookIdx, lastChapterIdx] = getLastChapter();
+  const [lastBookIdx, lastChapterIdx] = getSavedChapter();
   const isSameChapter =
     lastBookIdx === _book_index && lastChapterIdx === _chapter_index;
   if (!isSameChapter) {
     (newPage || $mainPage).scrollTop = 0;
-    setLastChapter();
+    saveChapter();
   }
-  //set bbook/chapter keys in storage
+  //set help
+  if (_m_opts.helpMode) showHelp();
 }
 
 function getVersionName() {
@@ -419,7 +417,7 @@ const manageBackButton = function() {
     if ($booklist.style.display === "none") {
       populateBooks();
     } else {
-      [_book_index, _chapter_index] = getLastChapter();
+      [_book_index, _chapter_index] = getSavedChapter();
       _navigator.popPage();
     }
   } else {
@@ -489,7 +487,7 @@ var nextPopover = function() {
   else nextHelp++;
 };
 
-function setLastChapter() {
+function saveChapter() {
   localStorage.setItem(
     STORAGE_LAST_BOOK_CHAPTER_KEY,
     JSON.stringify({
@@ -499,7 +497,7 @@ function setLastChapter() {
   );
 }
 
-function getLastChapter() {
+function getSavedChapter() {
   try {
     const lastChap = localStorage.getItem(STORAGE_LAST_BOOK_CHAPTER_KEY);
     if (!lastChap) throw new Error("null found");
@@ -569,7 +567,7 @@ const process_bible_data = function(receivedWords) {
         .then();
     });
 
-    [_book_index, _chapter_index] = getLastChapter();
+    [_book_index, _chapter_index] = getSavedChapter();
     selectBook(_book_index, _chapter_index);
   }).fail(function() {
     ons.notification.alert("Network Problem Detected!");
@@ -590,7 +588,6 @@ ons.ready(function() {
       $mainPage = event.target;
       //set gesture events
       const $chapter = document.querySelector("#chapter");
-
       const chapterGesture = new ons.GestureDetector($chapter);
       chapterGesture.on("swiperight swipeleft doubletap", gestureListner);
 
