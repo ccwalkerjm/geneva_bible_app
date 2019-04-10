@@ -269,36 +269,63 @@ function selectChapter(index) {
   $chapter.innerHTML = "";
   for (let i = 0; i < verses.length; i++) {
     const verse = verses[i].replace(/<span[^>]*>.*?<\/span>/, "");
-    const $verseItem = document.createElement("ons-list-item");
-    $verseItem.setAttribute("modifier", "material nodivider");
-    const verseP = document.createElement("p");
-    verseP.setAttribute("class", "verse");
+
+    //const verseTxtNode = document.createTextNode(verse); // Create a text node
+
+    const verseTextNode = document.createElement("textarea");
+    verseTextNode.setAttribute("readonly", "readonly");
+    verseTextNode.setAttribute("class", "textarea textarea--transparent verse"); //textarea textarea--transparent
+    verseTextNode.style.width = (_maxWidth - 100).toString() + "px";
+    verseTextNode.innerText = verse;
+
     const verseNo = document.createElement("label");
     verseNo.setAttribute("class", "verse");
     verseNo.setAttribute("tappable", "true");
     verseNo.addEventListener("click", copyToClip);
     verseNo.innerHTML = `${i + 1}&nbsp;`;
+
+    const verseP = document.createElement("p");
+    verseP.setAttribute("class", "verse");
     verseP.appendChild(verseNo);
+    verseP.appendChild(verseTextNode); //verseTxtNode);
 
-    var verseTxtNode = document.createTextNode(verse); // Create a text node
-    verseP.appendChild(verseTxtNode);
-
+    const $verseItem = document.createElement("ons-list-item");
+    $verseItem.setAttribute("modifier", "material");// nodivider");
     $verseItem.appendChild(verseP); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
+    
     $chapter.appendChild($verseItem);
   }
   if (_currentPageId !== $mainPage.id) _navigator.popPage();
-  else scrollToTop();
+  else alignVerses();
 }
 
-function scrollToTop(newPage) {
+function adjustVerseHeight(el, minHeight) {
+  // compute the height difference which is caused by border and outline
+  var outerHeight = parseInt(window.getComputedStyle(el).height, 10);
+  var diff = outerHeight - el.clientHeight;
+  // set the height to 0 in case of it has to be shrinked
+  //el.style.height = 0;
+  // set the correct height
+  // el.scrollHeight is the full height of the content, not just the visible part
+  el.style.height = el.scrollHeight + diff + "px";
+}
+
+function alignVerses() {
   //scroll to top
   const [lastBookIdx, lastChapterIdx] = getSavedChapter();
   const isSameChapter =
     lastBookIdx === _book_index && lastChapterIdx === _chapter_index;
   if (!isSameChapter) {
-    (newPage || $mainPage).scrollTop = 0;
+    $mainPage.scrollTop = 0;
     saveChapter();
   }
+  // we use the "data-adaptheight" attribute as a marker
+  const $chapter = $mainPage.querySelector("#chapter");
+  var textAreas = [].slice.call( $chapter.querySelectorAll("textarea"));
+  textAreas.forEach(function(el) {   
+    var minHeight = el.scrollHeight;
+    adjustVerseHeight(el, minHeight);
+  });
   //set help
   if (_m_opts.helpMode) showHelp();
 }
@@ -317,9 +344,13 @@ function getVersionName() {
 const copyToClip = function(e) {
   // book - version;
   console.log("verse", e);
-  const copiedText = `${_books[_book_index].name} ${_chapter_index +
-    1} (${getVersionName()})\n${e.target.parentNode.innerText}`;
-  ons.notification.toast(`Verse: ${e.target.innerText} Copied!`, {
+  const verseBtn = e.target;
+  const listItem = e.target.parentNode;
+  const verseTextNode = listItem.querySelector("textarea");
+  const copiedText = `${getVersionName()}\n${
+    _books[_book_index].name
+  } ${_chapter_index + 1}:${verseBtn.innerText} \n${verseTextNode.value}`;
+  ons.notification.toast(`Verse: ${verseBtn.innerText} Copied!`, {
     timeout: 5000,
     animation: "lift"
   });
@@ -508,7 +539,6 @@ function getSavedChapter() {
   }
 }
 
-
 const gestureListner = function(event) {
   switch (event.type) {
     //case "dragleft":
@@ -519,11 +549,10 @@ const gestureListner = function(event) {
       get_previous_chapter();
       break;
     case "doubletap":
-      const maxWidth = $mainPage.offsetWidth;
-      const tapWidth =event.gesture.center.pageX;
-      const percent= 20;
-      if (tapWidth < (percent/100) * maxWidth) get_previous_chapter();
-      if (tapWidth > ((100-percent)/100) * maxWidth) get_next_chapter();
+      const tapWidth = event.gesture.center.pageX;
+      const percent = 20;
+      if (tapWidth < (percent / 100) * _maxWidth) get_previous_chapter();
+      if (tapWidth > ((100 - percent) / 100) * _maxWidth) get_next_chapter();
   }
 };
 
@@ -574,18 +603,24 @@ const process_bible_data = function(receivedWords) {
   });
 };
 
+let _maxWidth; // = $mainPage.offsetWidth;
 ons.ready(function() {
   _navigator = document.querySelector("#bible-navigator");
   //manage navigator page switching
   document.addEventListener("show", function(event) {
     _currentPageId = event.target.id; //set new page
-    scrollToTop(event.target);
+    alignVerses(event.target);
   });
   document.addEventListener("init", function(event) {
     _currentPageId = event.target.id;
     const pageData = event.target.data;
     if (_currentPageId === "mainPage") {
       $mainPage = event.target;
+      _maxWidth = $mainPage.offsetWidth;
+      window.addEventListener("resize", function() {
+        _maxWidth = $mainPage.offsetWidth;
+        selectBook(_book_index, _chapter_index);
+      });
       //set gesture events
       const $chapter = document.querySelector("#chapter");
       const chapterGesture = new ons.GestureDetector($chapter);
