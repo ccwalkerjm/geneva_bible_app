@@ -19,16 +19,6 @@ const _ignoreSacredPhrases = {
   "the God": ""
 };
 
-const GestureEvents = [
-  //"release",
-  "dragleft",
-  "dragright",
-  "swipeleft",
-  "swiperight",
-  "doubletap",
-  "tap"
-];
-
 let _currentPageId;
 let _navigator;
 //main page
@@ -520,43 +510,23 @@ function getLastChapter() {
   }
 }
 
-let accept_gesture = true;
-
-function resetGesture() {
-  accept_gesture = true;
-}
 
 const gestureListner = function(event) {
-  const gesture = event.gesture;
-  //if (event.type !== 'release') {
-  const angle = Math.abs(gesture.angle);
-  const distance = Math.abs(gesture.distance);
-  //if (accept_gesture && distance > 4) {
-  //console.log("gesture OK:", event.type, event.gesture);
-  //accept_gesture = false;
   switch (event.type) {
     //case "dragleft":
     case "swipeleft":
-      //if (angle >= 150 && angle <= 210)
       get_next_chapter();
       break;
-    //case "dragright":
     case "swiperight":
-      //if (angle >= 0 && angle <= 30)
       get_previous_chapter();
       break;
     case "doubletap":
-      const maxWidth = document.querySelector("ons-page").offsetWidth;
-      const tapWidth = gesture.center.pageX;
-
-      if (tapWidth < 0.2 * maxWidth) get_previous_chapter();
-      if (tapWidth > 0.8 * maxWidth) get_next_chapter();
-
-      console.log("mainpage width:", maxWidth);
-      console.log("gesture tapWidth", tapWidth);
+      const maxWidth = $mainPage.offsetWidth;
+      const tapWidth =event.gesture.center.pageX;
+      const percent= 20;
+      if (tapWidth < (percent/100) * maxWidth) get_previous_chapter();
+      if (tapWidth > ((100-percent)/100) * maxWidth) get_next_chapter();
   }
-  //setTimeout(resetGesture, 500);
-  //}
 };
 
 const process_bible_data = function(receivedWords) {
@@ -611,7 +581,7 @@ ons.ready(function() {
   //manage navigator page switching
   document.addEventListener("show", function(event) {
     _currentPageId = event.target.id; //set new page
-    scrollToTop(event.target); 
+    scrollToTop(event.target);
   });
   document.addEventListener("init", function(event) {
     _currentPageId = event.target.id;
@@ -620,9 +590,10 @@ ons.ready(function() {
       $mainPage = event.target;
       //set gesture events
       const $chapter = document.querySelector("#chapter");
-      for (let i in GestureEvents) {
-        $chapter.addEventListener(GestureEvents[i], gestureListner, false);
-      }
+
+      const chapterGesture = new ons.GestureDetector($chapter);
+      chapterGesture.on("swiperight swipeleft doubletap", gestureListner);
+
       //load bible Meta json
       $loader = document.querySelector("#loader");
       $loader.show();
