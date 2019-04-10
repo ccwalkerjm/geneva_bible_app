@@ -31,9 +31,8 @@ const GestureEvents = [
 
 let _currentPageId;
 let _navigator;
-
-const MainPage = "mainPage";
-const SelectionPage = "bible-selection";
+//main page
+let $mainPage;
 
 //key components
 let $bookSelector;
@@ -300,17 +299,20 @@ function selectChapter(index) {
     $verseItem.appendChild(verseP); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
     $chapter.appendChild($verseItem);
   }
+  if (_currentPageId !== $mainPage.id) _navigator.popPage();
+  else scrollToTop();
+}
 
+function scrollToTop(newPage) {
   //scroll to top
   const [lastBookIdx, lastChapterIdx] = getLastChapter();
-  const changedChapter =
+  const isSameChapter =
     lastBookIdx === _book_index && lastChapterIdx === _chapter_index;
-  if (!changedChapter) document.querySelector("ons-page").scrollTop = 0;
-
+  if (!isSameChapter) {
+    (newPage || $mainPage).scrollTop = 0;
+    setLastChapter();
+  }
   //set bbook/chapter keys in storage
-  setLastChapter();
-  if (_currentPageId === SelectionPage)
-    _navigator.popPage();
 }
 
 function getVersionName() {
@@ -422,12 +424,12 @@ function populateBooks(selectOrderTriggered) {
 
 //close modal
 const manageBackButton = function() {
-  if (_currentPageId === SelectionPage) {
+  if (_currentPageId !== $mainPage.id) {
     const $booklist = document.querySelector("#book-list");
     if ($booklist.style.display === "none") {
       populateBooks();
     } else {
-      [_book_index, _chapter_index] = getLastChapter();      
+      [_book_index, _chapter_index] = getLastChapter();
       _navigator.popPage();
     }
   } else {
@@ -607,13 +609,15 @@ const process_bible_data = function(receivedWords) {
 ons.ready(function() {
   _navigator = document.querySelector("#bible-navigator");
   //manage navigator page switching
-  document.addEventListener("prepop", function(event) {
-    _currentPageId = event.enterPage.id; //set new page
+  document.addEventListener("show", function(event) {
+    _currentPageId = event.target.id; //set new page
+    scrollToTop(event.target); 
   });
   document.addEventListener("init", function(event) {
     _currentPageId = event.target.id;
     const pageData = event.target.data;
-    if (_currentPageId === MainPage) {
+    if (_currentPageId === "mainPage") {
+      $mainPage = event.target;
       //set gesture events
       const $chapter = document.querySelector("#chapter");
       for (let i in GestureEvents) {
@@ -627,7 +631,7 @@ ons.ready(function() {
       }).fail(function() {
         process_bible_data();
       });
-    } else if (_currentPageId === SelectionPage) {
+    } else {
       //
       switch (pageData.type) {
         case "book":
