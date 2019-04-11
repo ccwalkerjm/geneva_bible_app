@@ -442,10 +442,31 @@ function populateBooks(selectOrderTriggered) {
   }
 }
 
-const loadDictionary = function() {
+const loadDictionary = function(event) {
   let words = [];
+
+  let idx = (event && event.index) || 0;
+  const common_idx = 0,
+    capital_idx = 1,
+    phrases_idx = 2;
+
   for (let word in _englishWords) {
     if (word.slice(0, 2) === "__") continue;
+
+    let shouldContinue = false;
+    let firstLetter = word.slice(0, 1);
+    switch (idx) {
+      case phrases_idx:
+        if (word.split(" ").length == 1) shouldContinue = true;
+        break;
+      case common_idx:
+        if (firstLetter !== firstLetter.toLowerCase()) shouldContinue = true;
+        break;
+      case capital_idx:
+        if (firstLetter !== firstLetter.toUpperCase()) shouldContinue = true;
+        break;
+    }
+    if (shouldContinue) continue;
     words.push({
       old: word,
       new: _englishWords[word]
@@ -485,7 +506,8 @@ const loadDictionary = function() {
   titleRow.innerHTML = rowTemplate("No", "Old", "New");
   const $titleItem = document.querySelector("ons-list-title");
   $titleItem.setAttribute("modifier", "material"); // nodivider");
-  $titleItem.appendChild(titleRow); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
+  $titleItem.innerHTML = titleRow.outerHTML;
+  //$titleItem.appendChild(titleRow); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
 
   const $words = document.getElementById("words");
   $words.innerHTML = "";
@@ -494,7 +516,7 @@ const loadDictionary = function() {
     const itemRow = document.createElement("ons-row");
     const oldWord = words[i].old;
     const newWord = words[i].new;
-
+/* 
     if (oldWord.slice(0, 1) === oldWord.slice(0, 1).toUpperCase()) {
       if (!isUpper) {
         const captRow = document.createElement("ons-row");
@@ -518,11 +540,11 @@ const loadDictionary = function() {
         $words.appendChild($comItem);
         isLower = true;
       }
-    }
+    } */
 
     count++;
 
-    itemRow.innerHTML = rowTemplate(count, oldWord, newWord);
+    itemRow.innerHTML = rowTemplate(++i, oldWord, newWord);
 
     const $wordItem = document.createElement("ons-list-item");
     $wordItem.setAttribute("modifier", "material"); // nodivider");
@@ -744,6 +766,8 @@ ons.ready(function() {
       }
     } else {
       //load dictionary
+      dictionarySegment;
+      document.addEventListener("postchange", loadDictionary);
       loadDictionary();
     }
   });
