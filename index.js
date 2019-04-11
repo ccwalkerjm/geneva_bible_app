@@ -199,15 +199,16 @@ function replaceAllWithList(xtext, translationList, isSpecial) {
 
 //capitalize first word
 function addCapitalizedWords(words) {
-  for (let key in words) {
-    let word = words[key];
+  let expandedWords = JSON.parse(JSON.stringify(words));
+  for (let key in expandedWords) {
+    let word = expandedWords[key];
     //check if already a capital
     if (key.slice(0, 1) === key.slice(0, 1).toLowerCase()) {
-      words[key.slice(0, 1).toUpperCase() + key.slice(1)] =
+      expandedWords[key.slice(0, 1).toUpperCase() + key.slice(1)] =
         word.slice(0, 1).toUpperCase() + word.slice(1);
     }
   }
-  return words;
+  return expandedWords;
 }
 
 function translate(chapterText) {
@@ -290,9 +291,9 @@ function selectChapter(index) {
     verseP.appendChild(verseTextNode); //verseTxtNode);
 
     const $verseItem = document.createElement("ons-list-item");
-    $verseItem.setAttribute("modifier", "material");// nodivider");
+    $verseItem.setAttribute("modifier", "material"); // nodivider");
     $verseItem.appendChild(verseP); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
-    
+
     $chapter.appendChild($verseItem);
   }
   if (_currentPageId !== $mainPage.id) _navigator.popPage();
@@ -321,8 +322,8 @@ function alignVerses() {
   }
   // we use the "data-adaptheight" attribute as a marker
   const $chapter = $mainPage.querySelector("#chapter");
-  var textAreas = [].slice.call( $chapter.querySelectorAll("textarea"));
-  textAreas.forEach(function(el) {   
+  var textAreas = [].slice.call($chapter.querySelectorAll("textarea"));
+  textAreas.forEach(function(el) {
     var minHeight = el.scrollHeight;
     adjustVerseHeight(el, minHeight);
   });
@@ -441,6 +442,100 @@ function populateBooks(selectOrderTriggered) {
   }
 }
 
+const loadDictionary = function() {
+  let words = [];
+  for (let word in _englishWords) {
+    if (word.slice(0, 2) === "__") continue;
+    words.push({
+      old: word,
+      new: _englishWords[word]
+    });
+  }
+
+  function compare(a, b) {
+    if (a.old < b.old) {
+      return -1;
+    }
+    if (a.old > b.old) {
+      return 1;
+    }
+    // a must be equal to b
+    return 0;
+  }
+  words.sort(compare);
+
+  const rowTemplate = function(cell0, cell1, cell2) {
+    let cols = [];
+    if (cell0) {
+      cols.push(`<ons-col width="50px">${cell0}</ons-col>`);
+    }
+    if (cell1) {
+      cols.push(`<ons-col>${cell1}</ons-col>`);
+    }
+    if (cell2) {
+      cols.push(`<ons-col>${cell2}</ons-col>`);
+    }
+    return cols.join("");
+  };
+
+  let isUpper = false;
+  let isLower = false;
+  //set title
+  const titleRow = document.createElement("ons-row");
+  titleRow.innerHTML = rowTemplate("No", "Old", "New");
+  const $titleItem = document.querySelector("ons-list-title");
+  $titleItem.setAttribute("modifier", "material"); // nodivider");
+  $titleItem.appendChild(titleRow); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
+
+  const $words = document.getElementById("words");
+  $words.innerHTML = "";
+  let count = 0;
+  for (let i = 0; i < words.length; i++) {
+    const itemRow = document.createElement("ons-row");
+    const oldWord = words[i].old;
+    const newWord = words[i].new;
+
+    if (oldWord.slice(0, 1) === oldWord.slice(0, 1).toUpperCase()) {
+      if (!isUpper) {
+        const captRow = document.createElement("ons-row");
+        captRow.innerHTML = rowTemplate("-", "Names, Places and Special Words");
+
+        const $captItem = document.createElement("ons-list-header");
+        $captItem.setAttribute("modifier", "material"); // nodivider");
+        $captItem.appendChild(captRow); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
+        $words.appendChild($captItem);
+        isUpper = true;
+      }
+    } else {
+      if (!isLower) {
+        count = 0;
+        const comRow = document.createElement("ons-row");
+        comRow.innerHTML = rowTemplate("-", "Common Words");
+
+        const $comItem = document.createElement("ons-list-header");
+        $comItem.setAttribute("modifier", "material"); // nodivider");
+        $comItem.appendChild(comRow); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
+        $words.appendChild($comItem);
+        isLower = true;
+      }
+    }
+
+    count++;
+
+    itemRow.innerHTML = rowTemplate(count, oldWord, newWord);
+
+    const $wordItem = document.createElement("ons-list-item");
+    $wordItem.setAttribute("modifier", "material"); // nodivider");
+    $wordItem.appendChild(itemRow); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
+    $words.appendChild($wordItem);
+  }
+};
+
+//close modal
+const viewDictionary = function() {
+  _navigator.pushPage("words.html").then();
+};
+
 //close modal
 const manageBackButton = function() {
   if (_currentPageId !== $mainPage.id) {
@@ -449,7 +544,7 @@ const manageBackButton = function() {
       populateBooks();
     } else {
       [_book_index, _chapter_index] = getSavedChapter();
-      _navigator.popPage();
+      _navigator.popPage().then();
     }
   } else {
     window.close();
@@ -476,9 +571,10 @@ const helpTargets = [
     direction: "down"
   },
   {
-    target: "#exit",
-    message: "Tap this Button to exit the App",
-    header: "Exit Button",
+    target: "#dictionary",
+    message:
+      "Tap this Button to view the dictionary between the old english words and the modern words",
+    header: "Dictionary",
     direction: "down"
   },
   {
@@ -608,8 +704,10 @@ ons.ready(function() {
   _navigator = document.querySelector("#bible-navigator");
   //manage navigator page switching
   document.addEventListener("show", function(event) {
-    _currentPageId = event.target.id; //set new page
-    alignVerses(event.target);
+    if (_currentPageId === "mainPage") {
+      _currentPageId = event.target.id; //set new page
+      alignVerses(event.target);
+    }
   });
   document.addEventListener("init", function(event) {
     _currentPageId = event.target.id;
@@ -618,8 +716,10 @@ ons.ready(function() {
       $mainPage = event.target;
       _maxWidth = $mainPage.offsetWidth;
       window.addEventListener("resize", function() {
-        _maxWidth = $mainPage.offsetWidth;
-        selectBook(_book_index, _chapter_index);
+        if (_currentPageId === "mainPage") {
+          _maxWidth = $mainPage.offsetWidth;
+          selectBook(_book_index, _chapter_index);
+        }
       });
       //set gesture events
       const $chapter = document.querySelector("#chapter");
@@ -634,7 +734,7 @@ ons.ready(function() {
       }).fail(function() {
         process_bible_data();
       });
-    } else {
+    } else if (_currentPageId === "bible-selection") {
       //
       switch (pageData.type) {
         case "book":
@@ -642,6 +742,9 @@ ons.ready(function() {
         case "chapter":
           return getChapters();
       }
+    } else {
+      //load dictionary
+      loadDictionary();
     }
   });
 });
