@@ -38,8 +38,11 @@
     <ons-page id="mainPage">
       <ons-toolbar>
         <div class="left">
-          <ons-toolbar-button id="help-selector" onclick="showHelp()" modifier="material outline">
+          <ons-toolbar-button id="help-selector" onclick="showHelp()" modifier="material outline" title="Help Guide">
             <ons-icon icon="md-help"></ons-icon>
+          </ons-toolbar-button>
+          <ons-toolbar-button id="dictionary" onclick="viewDictionary()" modifier="material outline" title="Dictionary">
+            <ons-icon icon="md-library"></ons-icon>
           </ons-toolbar-button>
         </div>
         <div class="center">
@@ -49,11 +52,14 @@
           </ons-toolbar-button>
         </div>
         <div class="right">
-          <ons-toolbar-button id="dictionary" onclick="viewDictionary()" modifier="material outline">
-            <ons-icon icon="md-library"></ons-icon>
-          </ons-toolbar-button>
+          <p style="text-align: center; margin-top: 10px;">
+            <ons-search-input placeholder="Search Entire Bible"
+              onchange="searchBible(event)">
+            </ons-search-input>
+          </p>
         </div>
       </ons-toolbar>
+      <ons-list id="search-list"></ons-list>
       <ons-list id="chapter"></ons-list>
       <ons-bottom-toolbar modifier="aligned">
         <ons-row>
@@ -161,7 +167,7 @@
           <div class="center">
             <ons-segment id="dictionarySegment" style="width: 180px">
               <button>Common</button>
-              <button>Names</button>              
+              <button>Names</button>
               <button>Phrases</button>
             </ons-segment>
           </div>
@@ -181,10 +187,31 @@
     </ons-page>
   </template>
 
+<!--search modal-->
+<ons-modal id="search-modal" direction="up">
+      <ons-page id="searchPage">
+          <ons-toolbar>
+            <div class="left">
+            </div>
+            <div class="center">
+             Searched Results
+            </div>
+            <div class="right">
+              <ons-back-button modifier="material outline" onclick="closeSeachModal()">
+                <ons-icon icon="md-long-arrow-return"></ons-icon>
+                </ons-toolbar-button>
+            </div>
+          </ons-toolbar>
+          <ons-list id="SearchedList">
+              <ons-lazy-repeat id="lazy-searched-list"></ons-lazy-repeat>
+          </ons-list>        
+        </ons-page>
+  </ons-modal>
+
   <!--loader---->
   <ons-modal id="loader" direction="up">
     <div style="position: absolute;left: 50%;top:50%;transform: translate(-50%,-50%);">
-      <p>...Downloading Bible Data..</p>
+      <p id="loader-text">...Downloading Bible Data..</p>
       <ons-progress-bar indeterminate="true"></ons-progress-bar>
     </div>
   </ons-modal>

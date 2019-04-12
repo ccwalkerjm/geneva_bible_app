@@ -388,6 +388,7 @@ function selectBook(book_index, chapter_index) {
       _current_book = current_book;
       gotoChapter();
     };
+    $loader.querySelector("p#loader-text").innerHTML = "..Loading Bible Book..";
     $loader.show();
     $.get(`books/${book_code}.json`, get_new_book);
   }
@@ -516,7 +517,7 @@ const loadDictionary = function(event) {
     const itemRow = document.createElement("ons-row");
     const oldWord = words[i].old;
     const newWord = words[i].new;
-/* 
+    /* 
     if (oldWord.slice(0, 1) === oldWord.slice(0, 1).toUpperCase()) {
       if (!isUpper) {
         const captRow = document.createElement("ons-row");
@@ -674,6 +675,116 @@ const gestureListner = function(event) {
   }
 };
 
+/////////////////////////////////
+//////////////////////////////////
+/// seach Bible ///////////////
+const closeSeachModal = function(){
+  document.querySelector("#search-modal").hide();
+};
+
+let _searchedList = [];
+const searchBible = async function(e) {
+  _searchedList = [];
+  const search_word = e.target.value;
+  $loader.querySelector("p#loader-text").innerHTML =
+    "..Searching Entire Bible..";
+  $loader.show();
+  for (let book_idx = 0; book_idx < _books.length; book_idx++) {
+    const book_code = _books[book_idx].code;
+
+    const resp = await fetch(`books/${book_code}.json`);
+    const book_chapters = await resp.json();
+
+    for (let chap_idx = 0; chap_idx < book_chapters.length; chap_idx++) {
+      const encoded_text = book_chapters[chap_idx];
+      let chapterText = atob(encoded_text);
+
+      let verses = chapterText
+        .split("</p>")
+        .filter(x => x.slice(0, 3) === "<p>")
+        .map(x => x.slice(3).trim())
+        .filter(x => x);
+
+      for (let verse_idx = 0; verse_idx < verses.length; verse_idx++) {
+        //search chapter
+        let verse = verses[verse_idx];
+        //let lastIdx = verse.indexOf("</span>");
+        //let newOffset = lastIdx + "</span>".length;
+        //verse = verse.slice(newOffset);
+        const regex = new RegExp("\\b" + search_word + "\\b", "gi");
+        let m;
+        do {
+          m = regex.exec(verse);
+          if (m) {
+            _searchedList.push({
+              book_idx: book_idx,
+              chapter_idx: chap_idx,
+              verse_idx: verse_idx,
+              char_index: m.index
+            });
+          }
+        } while (m);
+      }
+    }
+  }
+  //console.log(_searchedList);
+  $loader.hide();
+  const searchModal = document.querySelector("#search-modal");
+
+  var lazySearchedList = document.getElementById("lazy-searched-list");
+
+  lazySearchedList.delegate = {
+    createItemContent: function(i) {
+      let obj = _searchedList[i];
+      let book = _books[obj.book_idx];
+      let itemId = "searched-" + i;
+      const replaceVerseMarker = "----loading...";
+
+      (async function() {
+        const resp = await fetch(`books/${book.code}.json`);
+        let book_chapters = await resp.json();
+        const encoded_text = book_chapters[obj.chapter_idx];
+        let chapterText = atob(encoded_text);
+
+        let verses = chapterText
+          .split("</p>")
+          .filter(x => x.slice(0, 3) === "<p>")
+          .map(x => x.slice(3).trim())
+          .filter(x => x);
+        let verse = verses[obj.verse_idx];
+        let lastIdx = verse.indexOf("</span>");
+        let newOffset = lastIdx + "</span>".length;
+        verse = verse.slice(newOffset);
+
+        let item, chkTimer;
+        var chkItem = function() {
+          item = document.getElementById(itemId);
+          if (item) {
+            clearTimeout(chkTimer);
+            item.innerHTML = item.innerHTML.replace(replaceVerseMarker, verse);
+          }
+        };
+        chkTimer = setInterval(chkItem, 500);
+      })();
+
+      return ons.createElement(
+        `<ons-list-item id="${itemId}">${book.name} ${obj.chapter_idx +
+          1}:${obj.verse_idx + 1}<p>${replaceVerseMarker}</p></ons-list-item>`
+      );
+    },
+    countItems: function() {
+      return _searchedList.length;
+    }
+  };
+
+  lazySearchedList.refresh();
+
+  searchModal.show();
+};
+///////////////////////
+////////////////////////
+//////////////////////////
+
 const process_bible_data = function(receivedWords) {
   try {
     if (receivedWords && typeof receivedWords === "object") {
@@ -750,6 +861,8 @@ ons.ready(function() {
 
       //load bible Meta json
       $loader = document.querySelector("#loader");
+      $loader.querySelector("p#loader-text").innerHTML =
+        "..Loading Bible Meta Data..";
       $loader.show();
       $.get("english.json", function(englishWords) {
         process_bible_data(englishWords);
@@ -764,9 +877,9 @@ ons.ready(function() {
         case "chapter":
           return getChapters();
       }
-    } else {
+    } else if (_currentPageId === "wordPage") {
       //load dictionary
-      dictionarySegment;
+      //dictionarySegment;
       document.addEventListener("postchange", loadDictionary);
       loadDictionary();
     }
