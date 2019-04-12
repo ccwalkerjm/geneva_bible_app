@@ -240,6 +240,15 @@ function translate(chapterText) {
   return chapterText;
 }
 
+function setVerseArray(chapterText) {
+  return chapterText
+    .split("</p>")
+    .filter(x => x.slice(0, 3) === "<p>")
+    .map(x => x.slice(3).trim())
+    .filter(x => x)
+    .map(x => x.replace(/<span[^>]*>.*?<\/span>/, ""));
+}
+
 //select Chapter
 function selectChapter(index) {
   _chapter_index = index || 0; //_chapter_index;
@@ -260,18 +269,12 @@ function selectChapter(index) {
 
   chapterText = translate(chapterText);
 
-  let verses = chapterText
-    .split("</p>")
-    .filter(x => x.slice(0, 3) === "<p>")
-    .map(x => x.slice(3).trim())
-    .filter(x => x);
+  let verses = setVerseArray(chapterText);
 
   const $chapter = document.getElementById("chapter");
   $chapter.innerHTML = "";
   for (let i = 0; i < verses.length; i++) {
-    const verse = verses[i].replace(/<span[^>]*>.*?<\/span>/, "");
-
-    //const verseTxtNode = document.createTextNode(verse); // Create a text node
+    const verse = verses[i];
 
     const verseTextNode = document.createElement("textarea");
     verseTextNode.setAttribute("readonly", "readonly");
@@ -500,8 +503,6 @@ const loadDictionary = function(event) {
     return cols.join("");
   };
 
-  let isUpper = false;
-  let isLower = false;
   //set title
   const titleRow = document.createElement("ons-row");
   titleRow.innerHTML = rowTemplate("No", "Old", "New");
@@ -512,38 +513,10 @@ const loadDictionary = function(event) {
 
   const $words = document.getElementById("words");
   $words.innerHTML = "";
-  let count = 0;
   for (let i = 0; i < words.length; i++) {
     const itemRow = document.createElement("ons-row");
     const oldWord = words[i].old;
     const newWord = words[i].new;
-    /* 
-    if (oldWord.slice(0, 1) === oldWord.slice(0, 1).toUpperCase()) {
-      if (!isUpper) {
-        const captRow = document.createElement("ons-row");
-        captRow.innerHTML = rowTemplate("-", "Names, Places and Special Words");
-
-        const $captItem = document.createElement("ons-list-header");
-        $captItem.setAttribute("modifier", "material"); // nodivider");
-        $captItem.appendChild(captRow); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
-        $words.appendChild($captItem);
-        isUpper = true;
-      }
-    } else {
-      if (!isLower) {
-        count = 0;
-        const comRow = document.createElement("ons-row");
-        comRow.innerHTML = rowTemplate("-", "Common Words");
-
-        const $comItem = document.createElement("ons-list-header");
-        $comItem.setAttribute("modifier", "material"); // nodivider");
-        $comItem.appendChild(comRow); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
-        $words.appendChild($comItem);
-        isLower = true;
-      }
-    } */
-
-    count++;
 
     itemRow.innerHTML = rowTemplate(++i, oldWord, newWord);
 
@@ -582,6 +555,13 @@ const helpTargets = [
     direction: "down"
   },
   {
+    target: "#dictionary",
+    message:
+      "Tap this Button to view the dictionary between the old english words and the modern words",
+    header: "Dictionary",
+    direction: "down"
+  },
+  {
     target: "#book-selector",
     message: "Tap Book Title to Change to another Book",
     header: "Book Selector",
@@ -594,10 +574,10 @@ const helpTargets = [
     direction: "down"
   },
   {
-    target: "#dictionary",
+    target: "#search-input",
     message:
-      "Tap this Button to view the dictionary between the old english words and the modern words",
-    header: "Dictionary",
+      "Search the Bible here. Enter a word and tap the enter key to search the entire Bible.",
+    header: "Bible Search",
     direction: "down"
   },
   {
@@ -678,12 +658,13 @@ const gestureListner = function(event) {
 /////////////////////////////////
 //////////////////////////////////
 /// seach Bible ///////////////
-const closeSeachModal = function(){
+const closeSeachModal = function() {
   document.querySelector("#search-modal").hide();
 };
 
 let _searchedList = [];
 const searchBible = async function(e) {
+  document.querySelector("#searchedTitle").innerText="Search Results..";
   _searchedList = [];
   const search_word = e.target.value;
   $loader.querySelector("p#loader-text").innerHTML =
@@ -699,18 +680,12 @@ const searchBible = async function(e) {
       const encoded_text = book_chapters[chap_idx];
       let chapterText = atob(encoded_text);
 
-      let verses = chapterText
-        .split("</p>")
-        .filter(x => x.slice(0, 3) === "<p>")
-        .map(x => x.slice(3).trim())
-        .filter(x => x);
+      let verses = setVerseArray(chapterText);
 
       for (let verse_idx = 0; verse_idx < verses.length; verse_idx++) {
         //search chapter
         let verse = verses[verse_idx];
-        //let lastIdx = verse.indexOf("</span>");
-        //let newOffset = lastIdx + "</span>".length;
-        //verse = verse.slice(newOffset);
+
         const regex = new RegExp("\\b" + search_word + "\\b", "gi");
         let m;
         do {
@@ -729,47 +704,69 @@ const searchBible = async function(e) {
   }
   //console.log(_searchedList);
   $loader.hide();
+
+  if (_searchedList.length === 0) {
+    ons.notification.alert("No Result Found!!");
+    return;
+  }
+
   const searchModal = document.querySelector("#search-modal");
 
   var lazySearchedList = document.getElementById("lazy-searched-list");
+
+  document.querySelector("#searchedTitle").innerText="Search Results..Amount Found:"+_searchedList.length;
 
   lazySearchedList.delegate = {
     createItemContent: function(i) {
       let obj = _searchedList[i];
       let book = _books[obj.book_idx];
       let itemId = "searched-" + i;
-      const replaceVerseMarker = "----loading...";
+      const replaceVerseMarker = ".....loading.....";
 
       (async function() {
-        const resp = await fetch(`books/${book.code}.json`);
-        let book_chapters = await resp.json();
-        const encoded_text = book_chapters[obj.chapter_idx];
-        let chapterText = atob(encoded_text);
+        try {
+          const resp = await fetch(`books/${book.code}.json`);
+          let book_chapters = await resp.json();
+          const encoded_text = book_chapters[obj.chapter_idx];
+          let chapterText = atob(encoded_text);
 
-        let verses = chapterText
-          .split("</p>")
-          .filter(x => x.slice(0, 3) === "<p>")
-          .map(x => x.slice(3).trim())
-          .filter(x => x);
-        let verse = verses[obj.verse_idx];
-        let lastIdx = verse.indexOf("</span>");
-        let newOffset = lastIdx + "</span>".length;
-        verse = verse.slice(newOffset);
+          let verse = setVerseArray(chapterText)[obj.verse_idx];
 
-        let item, chkTimer;
-        var chkItem = function() {
-          item = document.getElementById(itemId);
-          if (item) {
-            clearTimeout(chkTimer);
-            item.innerHTML = item.innerHTML.replace(replaceVerseMarker, verse);
-          }
-        };
-        chkTimer = setInterval(chkItem, 500);
+          let item, chkTimer;
+          var chkItem = function() {
+            item = document.getElementById(itemId);
+            if (item) {
+              clearTimeout(chkTimer);
+              const offset = 0;
+              const startIdx =
+                obj.char_index - offset >= 0 ? obj.char_index - offset : 0;
+              const endIdx =
+                verse.length >= obj.char_index + search_word.length + offset
+                  ? obj.char_index + search_word.length + offset
+                  : verse.length;
+              const enhancedVerse =
+                "<p>" +
+                verse.slice(0, startIdx) +
+                "<strong>" +
+                verse.slice(startIdx, endIdx) +
+                "</strong>" +
+                verse.slice(endIdx) +
+                "</p>";
+              item.innerHTML = item.innerHTML.replace(
+                replaceVerseMarker,
+                enhancedVerse
+              );
+            }
+          };
+          chkTimer = setInterval(chkItem, 500);
+        } catch (e) {
+          ons.notification.alert(e.message);
+        }
       })();
 
       return ons.createElement(
-        `<ons-list-item id="${itemId}">${book.name} ${obj.chapter_idx +
-          1}:${obj.verse_idx + 1}<p>${replaceVerseMarker}</p></ons-list-item>`
+        `<ons-list-item id="${itemId}"><p><strong>${i+1}: ${book.name} ${obj.chapter_idx +
+          1}:${obj.verse_idx + 1}</strong><br/>${replaceVerseMarker}</p></ons-list-item>`
       );
     },
     countItems: function() {
