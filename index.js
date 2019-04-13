@@ -203,7 +203,10 @@ function addCapitalizedWords(words) {
   for (let key in expandedWords) {
     let word = expandedWords[key];
     //check if already a capital
-    if (key.slice(0, 1) === key.slice(0, 1).toLowerCase()) {
+    if (
+      key.slice(0, 1) === key.slice(0, 1).toLowerCase() &&
+      key.split(" ") === 1
+    ) {
       expandedWords[key.slice(0, 1).toUpperCase() + key.slice(1)] =
         word.slice(0, 1).toUpperCase() + word.slice(1);
     }
@@ -299,36 +302,34 @@ function selectChapter(index) {
 
     $chapter.appendChild($verseItem);
   }
+  _previous_book_chapter = getSavedChapter();
+  saveChapter();
   if (_currentPageId !== $mainPage.id) _navigator.popPage();
   else alignVerses();
 }
 
-function adjustVerseHeight(el, minHeight) {
-  // compute the height difference which is caused by border and outline
-  var outerHeight = parseInt(window.getComputedStyle(el).height, 10);
-  var diff = outerHeight - el.clientHeight;
-  // set the height to 0 in case of it has to be shrinked
-  //el.style.height = 0;
-  // set the correct height
-  // el.scrollHeight is the full height of the content, not just the visible part
-  el.style.height = el.scrollHeight + diff + "px";
-}
+//previous book index and chapter index
+let _previous_book_chapter = [0, 0];
 
+//align verses properly in textarea....
 function alignVerses() {
   //scroll to top
-  const [lastBookIdx, lastChapterIdx] = getSavedChapter();
+  const [lastBookIdx, lastChapterIdx] = _previous_book_chapter;
   const isSameChapter =
     lastBookIdx === _book_index && lastChapterIdx === _chapter_index;
-  if (!isSameChapter) {
-    $mainPage.scrollTop = 0;
-    saveChapter();
-  }
+  if (!isSameChapter) $mainPage.scrollTop = 0;
   // we use the "data-adaptheight" attribute as a marker
   const $chapter = $mainPage.querySelector("#chapter");
   var textAreas = [].slice.call($chapter.querySelectorAll("textarea"));
   textAreas.forEach(function(el) {
-    var minHeight = el.scrollHeight;
-    adjustVerseHeight(el, minHeight);
+    //var minHeight = el.scrollHeight;
+    var outerHeight = parseInt(window.getComputedStyle(el).height, 10);
+    var diff = outerHeight - el.clientHeight;
+    // set the height to 0 in case of it has to be shrinked
+    //el.style.height = 0;
+    // set the correct height
+    // el.scrollHeight is the full height of the content, not just the visible part
+    el.style.height = el.scrollHeight + diff + "px";
   });
   //set help
   if (_m_opts.helpMode) showHelp();
@@ -446,31 +447,27 @@ function populateBooks(selectOrderTriggered) {
   }
 }
 
-const loadDictionary = function(event) {
-  let words = [];
-
-  let idx = (event && event.index) || 0;
+const isWrongWordType = function(idx, word) {
+  let firstLetter = word.slice(0, 1);
   const common_idx = 0,
     capital_idx = 1,
     phrases_idx = 2;
+  switch (idx) {
+    case phrases_idx:
+      return word.split(" ").length === 1;
+    case common_idx:
+      return firstLetter !== firstLetter.toLowerCase();
+    case capital_idx:
+      return firstLetter !== firstLetter.toUpperCase();
+  }
+};
 
+const loadDictionary = function(event) {
+  let words = [];
+  let idx = (event && event.index) || 0;
   for (let word in _englishWords) {
     if (word.slice(0, 2) === "__") continue;
-
-    let shouldContinue = false;
-    let firstLetter = word.slice(0, 1);
-    switch (idx) {
-      case phrases_idx:
-        if (word.split(" ").length == 1) shouldContinue = true;
-        break;
-      case common_idx:
-        if (firstLetter !== firstLetter.toLowerCase()) shouldContinue = true;
-        break;
-      case capital_idx:
-        if (firstLetter !== firstLetter.toUpperCase()) shouldContinue = true;
-        break;
-    }
-    if (shouldContinue) continue;
+    if (isWrongWordType(idx, word)) continue;
     words.push({
       old: word,
       new: _englishWords[word]
@@ -518,7 +515,7 @@ const loadDictionary = function(event) {
     const oldWord = words[i].old;
     const newWord = words[i].new;
 
-    itemRow.innerHTML = rowTemplate(++i, oldWord, newWord);
+    itemRow.innerHTML = rowTemplate(i + 1, oldWord, newWord);
 
     const $wordItem = document.createElement("ons-list-item");
     $wordItem.setAttribute("modifier", "material"); // nodivider");
@@ -664,7 +661,7 @@ const closeSeachModal = function() {
 
 let _searchedList = [];
 const searchBible = async function(e) {
-  document.querySelector("#searchedTitle").innerText="Search Results..";
+  document.querySelector("#searchedTitle").innerText = "Search Results..";
   _searchedList = [];
   const search_word = e.target.value;
   $loader.querySelector("p#loader-text").innerHTML =
@@ -714,7 +711,8 @@ const searchBible = async function(e) {
 
   var lazySearchedList = document.getElementById("lazy-searched-list");
 
-  document.querySelector("#searchedTitle").innerText="Search Results..Amount Found:"+_searchedList.length;
+  document.querySelector("#searchedTitle").innerText =
+    "Search Results..Amount Found:" + _searchedList.length;
 
   lazySearchedList.delegate = {
     createItemContent: function(i) {
@@ -765,8 +763,10 @@ const searchBible = async function(e) {
       })();
 
       return ons.createElement(
-        `<ons-list-item id="${itemId}"><p><strong>${i+1}: ${book.name} ${obj.chapter_idx +
-          1}:${obj.verse_idx + 1}</strong><br/>${replaceVerseMarker}</p></ons-list-item>`
+        `<ons-list-item id="${itemId}"><p><strong>${i + 1}: ${
+          book.name
+        } ${obj.chapter_idx + 1}:${obj.verse_idx +
+          1}</strong><br/>${replaceVerseMarker}</p></ons-list-item>`
       );
     },
     countItems: function() {
@@ -833,9 +833,15 @@ let _maxWidth; // = $mainPage.offsetWidth;
 ons.ready(function() {
   _navigator = document.querySelector("#bible-navigator");
   //manage navigator page switching
-  document.addEventListener("show", function(event) {
+  window.addEventListener("resize", function(event) {
     if (_currentPageId === "mainPage") {
-      _currentPageId = event.target.id; //set new page
+      _maxWidth = $mainPage.offsetWidth;
+      selectBook(_book_index, _chapter_index);
+    }
+  });
+  document.addEventListener("show", function(event) {
+    _currentPageId = event.target.id;
+    if (_currentPageId === "mainPage") {
       alignVerses(event.target);
     }
   });
@@ -845,12 +851,7 @@ ons.ready(function() {
     if (_currentPageId === "mainPage") {
       $mainPage = event.target;
       _maxWidth = $mainPage.offsetWidth;
-      window.addEventListener("resize", function() {
-        if (_currentPageId === "mainPage") {
-          _maxWidth = $mainPage.offsetWidth;
-          selectBook(_book_index, _chapter_index);
-        }
-      });
+
       //set gesture events
       const $chapter = document.querySelector("#chapter");
       const chapterGesture = new ons.GestureDetector($chapter);
