@@ -243,7 +243,7 @@ function translate(chapterText) {
   return chapterText;
 }
 
-function setVerseArray(chapterText) {
+function getVerses(chapterText) {
   return chapterText
     .split("</p>")
     .filter(x => x.slice(0, 3) === "<p>")
@@ -272,7 +272,7 @@ function selectChapter(index) {
 
   chapterText = translate(chapterText);
 
-  let verses = setVerseArray(chapterText);
+  let verses = getVerses(chapterText);
 
   const $chapter = document.getElementById("chapter");
   $chapter.innerHTML = "";
@@ -288,7 +288,7 @@ function selectChapter(index) {
     const verseNo = document.createElement("label");
     verseNo.setAttribute("class", "verse");
     verseNo.setAttribute("tappable", "true");
-    verseNo.addEventListener("click", copyToClip);
+    verseNo.addEventListener("click", _verseObj.trigger);
     verseNo.innerHTML = `${i + 1}&nbsp;`;
 
     const verseP = document.createElement("p");
@@ -346,28 +346,46 @@ function getVersionName() {
   }
 }
 
-const copyToClip = function(e) {
-  // book - version;
-  console.log("verse", e);
-  const verseBtn = e.target;
-  const listItem = e.target.parentNode;
-  const verseTextNode = listItem.querySelector("textarea");
-  const copiedText = `${getVersionName()}\n${
-    _books[_book_index].name
-  } ${_chapter_index + 1}:${verseBtn.innerText} \n${verseTextNode.value}`;
-  ons.notification.toast(`Verse: ${verseBtn.innerText} Copied!`, {
-    timeout: 5000,
-    animation: "lift"
-  });
-  navigator.clipboard
-    .writeText(copiedText)
-    .then(() => {
-      console.log("copied verse", copiedText);
-    })
-    .catch(err => {
-      // This can happen if the user denies clipboard permissions:
-      console.error("Could not copy text: ", err);
+//////////////////////////////////
+//////verse object
+const _verseObj = {
+  //data : {},
+  addFavourite: function() {}, 
+
+  trigger: function(e) {
+    _verseObj.data = e;
+    _verseObj.show(e);
+  },
+
+  preshow: function(e) {
+    console.log("_verseObj.preshow", e);
+  },
+
+  copyVerse: function() {    
+    const e = _verseObj.data;
+    _verseObj.hide();
+    // book - version;
+    console.log("verse", e);
+    const verseBtn = e.target;
+    const listItem = e.target.parentNode;
+    const verseTextNode = listItem.querySelector("textarea");
+    const copiedText = `${getVersionName()}\n${
+      _books[_book_index].name
+    } ${_chapter_index + 1}:${verseBtn.innerText} \n${verseTextNode.value}`;
+    ons.notification.toast(`Verse: ${verseBtn.innerText} Copied!`, {
+      timeout: 5000,
+      animation: "lift"
     });
+    navigator.clipboard
+      .writeText(copiedText)
+      .then(() => {
+        console.log("copied verse", copiedText);
+      })
+      .catch(err => {
+        // This can happen if the user denies clipboard permissions:
+        console.error("Could not copy text: ", err);
+      });
+  }
 };
 
 let _current_book_code;
@@ -456,19 +474,23 @@ const isWrongWordType = function(idx, word) {
     case phrases_idx:
       return word.split(" ").length === 1;
     case common_idx:
-      return firstLetter !== firstLetter.toLowerCase();
+      return (
+        firstLetter !== firstLetter.toLowerCase() || word.split(" ").length > 1
+      );
     case capital_idx:
-      return firstLetter !== firstLetter.toUpperCase();
+      return (
+        firstLetter !== firstLetter.toUpperCase() || word.split(" ").length > 1
+      );
   }
 };
 
 const loadDictionary = function(event) {
-  let words = [];
+  let dictionaryList = [];
   let idx = (event && event.index) || 0;
   for (let word in _englishWords) {
     if (word.slice(0, 2) === "__") continue;
     if (isWrongWordType(idx, word)) continue;
-    words.push({
+    dictionaryList.push({
       old: word,
       new: _englishWords[word]
     });
@@ -484,7 +506,7 @@ const loadDictionary = function(event) {
     // a must be equal to b
     return 0;
   }
-  words.sort(compare);
+  dictionaryList.sort(compare);
 
   const rowTemplate = function(cell0, cell1, cell2) {
     let cols = [];
@@ -506,22 +528,27 @@ const loadDictionary = function(event) {
   const $titleItem = document.querySelector("ons-list-title");
   $titleItem.setAttribute("modifier", "material"); // nodivider");
   $titleItem.innerHTML = titleRow.outerHTML;
-  //$titleItem.appendChild(titleRow); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
 
-  const $words = document.getElementById("words");
-  $words.innerHTML = "";
-  for (let i = 0; i < words.length; i++) {
-    const itemRow = document.createElement("ons-row");
-    const oldWord = words[i].old;
-    const newWord = words[i].new;
+  var lazyWordList = document.getElementById("lazy-word-list");
+  lazyWordList.delegate = {
+    createItemContent: function(i) {
+      const itemRow = document.createElement("ons-row");
+      const oldWord = dictionaryList[i].old;
+      const newWord = dictionaryList[i].new;
 
-    itemRow.innerHTML = rowTemplate(i + 1, oldWord, newWord);
+      itemRow.innerHTML = rowTemplate(i + 1, oldWord, newWord);
 
-    const $wordItem = document.createElement("ons-list-item");
-    $wordItem.setAttribute("modifier", "material"); // nodivider");
-    $wordItem.appendChild(itemRow); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
-    $words.appendChild($wordItem);
-  }
+      return ons.createElement(
+        `<ons-list-item modifier="material">${
+          itemRow.outerHTML
+        }</ons-list-item>`
+      );
+    },
+    countItems: function() {
+      return dictionaryList.length;
+    }
+  };
+  lazyWordList.refresh();
 };
 
 //close modal
@@ -659,64 +686,10 @@ const closeSeachModal = function() {
   document.querySelector("#search-modal").hide();
 };
 
-let _searchedList = [];
-const searchBible = async function(e) {
-  document.querySelector("#searchedTitle").innerText = "Search Results..";
-  _searchedList = [];
-  const search_word = e.target.value;
-  $loader.querySelector("p#loader-text").innerHTML =
-    "..Searching Entire Bible..";
-  $loader.show();
-  for (let book_idx = 0; book_idx < _books.length; book_idx++) {
-    const book_code = _books[book_idx].code;
-
-    const resp = await fetch(`books/${book_code}.json`);
-    const book_chapters = await resp.json();
-
-    for (let chap_idx = 0; chap_idx < book_chapters.length; chap_idx++) {
-      const encoded_text = book_chapters[chap_idx];
-      let chapterText = atob(encoded_text);
-
-      let verses = setVerseArray(chapterText);
-
-      for (let verse_idx = 0; verse_idx < verses.length; verse_idx++) {
-        //search chapter
-        let verse = verses[verse_idx];
-
-        const regex = new RegExp("\\b" + search_word + "\\b", "gi");
-        let m;
-        do {
-          m = regex.exec(verse);
-          if (m) {
-            _searchedList.push({
-              book_idx: book_idx,
-              chapter_idx: chap_idx,
-              verse_idx: verse_idx,
-              char_index: m.index
-            });
-          }
-        } while (m);
-      }
-    }
-  }
-  //console.log(_searchedList);
-  $loader.hide();
-
-  if (_searchedList.length === 0) {
-    ons.notification.alert("No Result Found!!");
-    return;
-  }
-
-  const searchModal = document.querySelector("#search-modal");
-
-  var lazySearchedList = document.getElementById("lazy-searched-list");
-
-  document.querySelector("#searchedTitle").innerText =
-    "Search Results..Amount Found:" + _searchedList.length;
-
-  lazySearchedList.delegate = {
+const getLazySearchDelegate = function(searchWord, searchList) {
+  return {
     createItemContent: function(i) {
-      let obj = _searchedList[i];
+      let obj = searchList[i];
       let book = _books[obj.book_idx];
       let itemId = "searched-" + i;
       const replaceVerseMarker = ".....loading.....";
@@ -728,7 +701,7 @@ const searchBible = async function(e) {
           const encoded_text = book_chapters[obj.chapter_idx];
           let chapterText = atob(encoded_text);
 
-          let verse = setVerseArray(chapterText)[obj.verse_idx];
+          let verse = getVerses(chapterText)[obj.verse_idx];
 
           let item, chkTimer;
           var chkItem = function() {
@@ -739,8 +712,8 @@ const searchBible = async function(e) {
               const startIdx =
                 obj.char_index - offset >= 0 ? obj.char_index - offset : 0;
               const endIdx =
-                verse.length >= obj.char_index + search_word.length + offset
-                  ? obj.char_index + search_word.length + offset
+                verse.length >= obj.char_index + searchWord.length + offset
+                  ? obj.char_index + searchWord.length + offset
                   : verse.length;
               const enhancedVerse =
                 "<p>" +
@@ -770,16 +743,78 @@ const searchBible = async function(e) {
       );
     },
     countItems: function() {
-      return _searchedList.length;
+      return searchList.length;
     }
   };
+};
 
+const searchBible = async function(e) {
+  document.querySelector("#searchedTitle").innerText = "Search Results..";
+  let searchList = [];
+  const searchWord = e.target.value;
+  $loader.querySelector("p#loader-text").innerHTML =
+    "..Searching Entire Bible..";
+  $loader.show();
+  for (let book_idx = 0; book_idx < _books.length; book_idx++) {
+    const book_code = _books[book_idx].code;
+
+    const resp = await fetch(`books/${book_code}.json`);
+    const book_chapters = await resp.json();
+
+    for (let chap_idx = 0; chap_idx < book_chapters.length; chap_idx++) {
+      const encoded_text = book_chapters[chap_idx];
+      let chapterText = atob(encoded_text);
+
+      let verses = getVerses(chapterText);
+
+      for (let verse_idx = 0; verse_idx < verses.length; verse_idx++) {
+        //search chapter
+        let verse = verses[verse_idx];
+
+        const regex = new RegExp("\\b" + searchWord + "\\b", "gi");
+        let m;
+        do {
+          m = regex.exec(verse);
+          if (m) {
+            searchList.push({
+              book_idx: book_idx,
+              chapter_idx: chap_idx,
+              verse_idx: verse_idx,
+              char_index: m.index
+            });
+          }
+        } while (m);
+      }
+    }
+  }
+  //console.log(searchList);
+  $loader.hide();
+
+  if (searchList.length === 0) {
+    ons.notification.alert("No Result Found!!");
+    return;
+  }
+
+  document.querySelector("#searchedTitle").innerText =
+    "Search Results..Amount Found:" + searchList.length;
+  const searchModal = document.querySelector("#search-modal");
+  var lazySearchedList = document.getElementById("lazy-searched-list");
+  lazySearchedList.delegate = getLazySearchDelegate(searchWord, searchList);
   lazySearchedList.refresh();
-
   searchModal.show();
 };
 ///////////////////////
 ////////////////////////
+
+const viewFavourite = function() {
+  const favModal = document.getElementById("favourite-modal");
+  favModal.show();
+};
+
+const closeFavouriteModal = function() {
+  const favModal = document.getElementById("favourite-modal");
+  favModal.hide();
+};
 //////////////////////////
 
 const process_bible_data = function(receivedWords) {
@@ -824,6 +859,14 @@ const process_bible_data = function(receivedWords) {
 
     [_book_index, _chapter_index] = getSavedChapter();
     selectBook(_book_index, _chapter_index);
+
+    ons
+      .createElement("verse-options.html", { append: true })
+      .then(function(sheet) {
+        _verseObj.show = sheet.show.bind(sheet);
+        _verseObj.hide = sheet.hide.bind(sheet);
+        sheet.addEventListener("preshow", _verseObj.preshow);
+      });
   }).fail(function() {
     ons.notification.alert("Network Problem Detected!");
   });
@@ -831,6 +874,7 @@ const process_bible_data = function(receivedWords) {
 
 let _maxWidth; // = $mainPage.offsetWidth;
 ons.ready(function() {
+  //
   _navigator = document.querySelector("#bible-navigator");
   //manage navigator page switching
   window.addEventListener("resize", function(event) {
