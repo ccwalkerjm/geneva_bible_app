@@ -350,7 +350,18 @@ function getVersionName() {
 //////verse object
 const _verseObj = {
   //data : {},
-  addFavourite: function() {}, 
+  addFavourite: function() {
+    const key = "courserv_geneva_favorite_key";
+    const favoriteList = localStorage.getItem(key);
+    if (favoriteList) {
+      _verseObj.favoriteList = JSON.parse(favoriteList);
+    } else {
+      _verseObj.favoriteList = [];
+    }
+    _verseObj.favoriteList.push(_verseObj.extractVerse());
+
+    localStorage.setItem(key, JSON.stringify(_verseObj.favoriteList));
+  },
 
   trigger: function(e) {
     _verseObj.data = e;
@@ -361,20 +372,31 @@ const _verseObj = {
     console.log("_verseObj.preshow", e);
   },
 
-  copyVerse: function() {    
-    const e = _verseObj.data;
+  extractVerse: function() {
+    const verseBtn = _verseObj.data.target;
+    const listItem = _verseObj.data.target.parentNode;
+    const verseTextNode = listItem.querySelector("textarea");
+    return {
+      book_idx: _book_index,
+      chapter_idx: _chapter_index,
+      verse_idx: parseInt(verseBtn.innerText) - 1,
+      version: _m_opts.version,
+      text: verseTextNode.value,
+      version_name: getVersionName()
+    };
+  },
+
+  copyVerse: function() {
+    const verseX = _verseObj.extractVerse();
     _verseObj.hide();
     // book - version;
-    console.log("verse", e);
-    const verseBtn = e.target;
-    const listItem = e.target.parentNode;
-    const verseTextNode = listItem.querySelector("textarea");
-    const copiedText = `${getVersionName()}\n${
-      _books[_book_index].name
-    } ${_chapter_index + 1}:${verseBtn.innerText} \n${verseTextNode.value}`;
-    ons.notification.toast(`Verse: ${verseBtn.innerText} Copied!`, {
-      timeout: 5000,
-      animation: "lift"
+    const copiedText = `${verseX.version_name}\n${
+      _books[verseX.book_idx].name
+    } ${verseX.chapter_idx + 1}:${verseX.verse_idx + 1} \n${verseX.text}`;
+
+    ons.notification.toast(`Verse: ${verseX.verse_idx + 1} Copied!`, {
+      timeout: 2000,
+      animation: "fall"
     });
     navigator.clipboard
       .writeText(copiedText)
