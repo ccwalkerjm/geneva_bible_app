@@ -4,20 +4,16 @@
 }
 
 
-label.verse {
-    display: inline-block;   
+.verse {
+    margin:0;
+    padding:0;
+}
+
+span.verse {   
     font-weight: bold;
 }
 
-p.verse {
-    margin:0;
-    padding:0;
-}
 
-textarea.verse {
-    margin:0;
-    padding:0;
-}
 
 .link-note{
     font-size: xx-small

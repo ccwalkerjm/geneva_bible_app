@@ -279,28 +279,24 @@ function selectChapter(index) {
   for (let i = 0; i < verses.length; i++) {
     const verse = verses[i];
 
-    const verseTextNode = document.createElement("textarea");
-    verseTextNode.setAttribute("readonly", "readonly");
-    verseTextNode.setAttribute("class", "textarea textarea--transparent verse"); //textarea textarea--transparent
-    verseTextNode.style.width = (_maxWidth - 100).toString() + "px";
-    verseTextNode.innerText = verse;
+    const verse_obj_str = btoa(
+      JSON.stringify({
+        book_idx: _book_index,
+        chapter_idx: _chapter_index,
+        verse_idx: i,
+        version: _m_opts.version
+      })
+    );
 
-    const verseNo = document.createElement("label");
-    verseNo.setAttribute("class", "verse");
-    verseNo.setAttribute("tappable", "true");
-    verseNo.addEventListener("click", _verseObj.trigger);
-    verseNo.innerHTML = `${i + 1}&nbsp;`;
-
-    const verseP = document.createElement("p");
-    verseP.setAttribute("class", "verse");
-    verseP.appendChild(verseNo);
-    verseP.appendChild(verseTextNode); //verseTxtNode);
-
-    const $verseItem = document.createElement("ons-list-item");
-    $verseItem.setAttribute("modifier", "material"); // nodivider");
-    $verseItem.appendChild(verseP); //.innerHTML = `<p style=""><label tappable class="verse">${i+1}&nbsp;</label>${verse}</p>`;
-
-    $chapter.appendChild($verseItem);
+    const ta_style = "width:" + (_maxWidth - 100).toString() + "px";
+    const ta_class = "textarea textarea--transparent verse";
+    const item =
+      `<ons-list-item modifier="material><ons-row>` +
+      `<ons-col width="100px"><span class="verse" tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">${i +
+        1}&nbsp;</span></ons-col>` +
+      `<ons-col><textarea class="${ta_class}" style="${ta_style}" readonly>${verse}</textarea>` +
+      `</ons-col></ons-row></ons-list-item>`;
+    $chapter.appendChild(ons.createElement(item)); //    $verseItem);
   }
   _previous_book_chapter = getSavedChapter();
   saveChapter();
@@ -358,42 +354,37 @@ const _verseObj = {
     } else {
       _verseObj.favoriteList = [];
     }
-    _verseObj.favoriteList.push(_verseObj.extractVerse());
+    const isBookmarkExits = _verseObj.favoriteList.find(
+      x =>
+        x.book_idx === _verseObj.data.book_idx &&
+        x.chapter_idx === _verseObj.data.chapter_idx &&
+        x.verse_idx === _verseObj.data.verse_idx &&
+        x.version === _verseObj.data.version
+    );
 
-    localStorage.setItem(key, JSON.stringify(_verseObj.favoriteList));
+    if (!isBookmarkExits) {
+      _verseObj.favoriteList.push(_verseObj.data);
+      localStorage.setItem(key, JSON.stringify(_verseObj.favoriteList));
+    }
+    _verseObj.hide();
   },
 
   trigger: function(e) {
-    _verseObj.data = e;
-    _verseObj.show(e);
+    _verseObj.data = JSON.parse(atob(e.target.getAttribute("data-obj")));
+    _verseObj.show();
   },
 
   preshow: function(e) {
     console.log("_verseObj.preshow", e);
   },
 
-  extractVerse: function() {
-    const verseBtn = _verseObj.data.target;
-    const listItem = _verseObj.data.target.parentNode;
-    const verseTextNode = listItem.querySelector("textarea");
-    return {
-      book_idx: _book_index,
-      chapter_idx: _chapter_index,
-      verse_idx: parseInt(verseBtn.innerText) - 1,
-      version: _m_opts.version,
-      text: verseTextNode.value,
-      version_name: getVersionName()
-    };
-  },
-
   copyVerse: function() {
-    const verseX = _verseObj.extractVerse();
+    const verseX = _verseObj.data;
     _verseObj.hide();
     // book - version;
-    const copiedText = `${verseX.version_name}\n${
+    const copiedText = `${verseX.version}\n${
       _books[verseX.book_idx].name
-    } ${verseX.chapter_idx + 1}:${verseX.verse_idx + 1} \n${verseX.text}`;
-
+    } ${verseX.chapter_idx + 1}:${verseX.verse_idx + 1}`;
     ons.notification.toast(`Verse: ${verseX.verse_idx + 1} Copied!`, {
       timeout: 2000,
       animation: "fall"
@@ -749,6 +740,10 @@ const getLazySearchDelegate = function(searchWord, searchList) {
                 replaceVerseMarker,
                 enhancedVerse
               );
+
+              //span attribute
+              const span = item.querySelector("span");
+              span.setAttribute("data-obj", verse_obj_str);
             }
           };
           chkTimer = setInterval(chkItem, 500);
@@ -757,11 +752,16 @@ const getLazySearchDelegate = function(searchWord, searchList) {
         }
       })();
 
+      const verse_obj_str = btoa(JSON.stringify(obj));
+
       return ons.createElement(
-        `<ons-list-item id="${itemId}"><p><strong>${i + 1}: ${
-          book.name
-        } ${obj.chapter_idx + 1}:${obj.verse_idx +
-          1}</strong><br/>${replaceVerseMarker}</p></ons-list-item>`
+        `<ons-list-item id="${itemId}">` +
+          `<p><span tappable onclick="_verseObj.trigger(event)">` +
+          `<strong>${i + 1}:` +
+          ` ${book.name} ${obj.chapter_idx + 1}:` +
+          `${obj.verse_idx + 1}</strong>` +
+          `</span><br/>` +
+          `${replaceVerseMarker}</p></ons-list-item>`
       );
     },
     countItems: function() {
