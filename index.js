@@ -704,8 +704,22 @@ const getLazySearchDelegate = function(searchWord, searchList) {
     createItemContent: function(i) {
       let obj = searchList[i];
       let book = _books[obj.book_idx];
-      let itemId = "searched-" + i;
+
       const replaceVerseMarker = ".....loading.....";
+      const listItem = document.createElement("ons-list-item");
+      
+      obj.version = 0;
+      const verse_obj_str = btoa(JSON.stringify(obj));
+      //const verse_obj_str = btoa(JSON.stringify(obj));
+ //span attribute
+
+      listItem.innerHTML =
+        `<p><strong><span tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">` +
+        `${i + 1}:` +
+        ` ${book.name} ${obj.chapter_idx + 1}:` +
+        `${obj.verse_idx + 1}` +
+        `</span></strong><br/>` +
+        `${replaceVerseMarker}</p>`;
 
       (async function() {
         try {
@@ -716,53 +730,30 @@ const getLazySearchDelegate = function(searchWord, searchList) {
 
           let verse = getVerses(chapterText)[obj.verse_idx];
 
-          let item, chkTimer;
-          var chkItem = function() {
-            item = document.getElementById(itemId);
-            if (item) {
-              clearTimeout(chkTimer);
-              const offset = 0;
-              const startIdx =
-                obj.char_index - offset >= 0 ? obj.char_index - offset : 0;
-              const endIdx =
-                verse.length >= obj.char_index + searchWord.length + offset
-                  ? obj.char_index + searchWord.length + offset
-                  : verse.length;
-              const enhancedVerse =
-                "<p>" +
-                verse.slice(0, startIdx) +
-                "<strong>" +
-                verse.slice(startIdx, endIdx) +
-                "</strong>" +
-                verse.slice(endIdx) +
-                "</p>";
-              item.innerHTML = item.innerHTML.replace(
-                replaceVerseMarker,
-                enhancedVerse
-              );
-
-              //span attribute
-              const span = item.querySelector("span");
-              span.setAttribute("data-obj", verse_obj_str);
-            }
-          };
-          chkTimer = setInterval(chkItem, 500);
+          const offset = 0;
+          const startIdx =
+            obj.char_index - offset >= 0 ? obj.char_index - offset : 0;
+          const endIdx =
+            verse.length >= obj.char_index + searchWord.length + offset
+              ? obj.char_index + searchWord.length + offset
+              : verse.length;
+          const enhancedVerse =
+            "<p>" +
+            verse.slice(0, startIdx) +
+            "<strong>" +
+            verse.slice(startIdx, endIdx) +
+            "</strong>" +
+            verse.slice(endIdx) +
+            "</p>";
+          listItem.innerHTML = listItem.innerHTML.replace(
+            replaceVerseMarker,
+            enhancedVerse
+          );         
         } catch (e) {
           ons.notification.alert(e.message);
         }
       })();
-
-      const verse_obj_str = btoa(JSON.stringify(obj));
-
-      return ons.createElement(
-        `<ons-list-item id="${itemId}">` +
-          `<p><span tappable onclick="_verseObj.trigger(event)">` +
-          `<strong>${i + 1}:` +
-          ` ${book.name} ${obj.chapter_idx + 1}:` +
-          `${obj.verse_idx + 1}</strong>` +
-          `</span><br/>` +
-          `${replaceVerseMarker}</p></ons-list-item>`
-      );
+      return listItem; 
     },
     countItems: function() {
       return searchList.length;
