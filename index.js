@@ -848,7 +848,7 @@ const _favourite_obj = {
               ${text}
             </div>
             <div class="right">
-              <ons-button onclick="_favourite_obj.deleteFavourite(event)"><ons-icon icon="md-delete"></ons-icon></ons-button>
+              <ons-button onclick="_favourite_obj.deleteFavourite(event)" style="background-color:red"><ons-icon icon="md-delete"></ons-icon></ons-button>
             </div>       
           </ons-list-item`
         )
