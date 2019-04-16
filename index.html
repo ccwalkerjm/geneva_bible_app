@@ -44,7 +44,7 @@
           <ons-toolbar-button id="dictionary" onclick="viewDictionary()" modifier="material outline" title="Dictionary">
             <ons-icon icon="md-library"></ons-icon>
           </ons-toolbar-button>
-          <ons-toolbar-button id="favouriteBtn" onclick="viewFavourite()" modifier="material outline" title="Favourite">
+          <ons-toolbar-button id="favouriteBtn" onclick="_favourite_obj.viewFavourite()" modifier="material outline" title="Favourite">
             <ons-icon icon="md-favorite"></ons-icon>
           </ons-toolbar-button>
         </div>
@@ -60,8 +60,7 @@
             </ons-search-input>
           </p>
         </div>
-      </ons-toolbar>
-      <ons-list id="search-list"></ons-list>
+      </ons-toolbar>     
       <ons-list id="chapter"></ons-list>
       <ons-bottom-toolbar modifier="aligned">
         <ons-row>
@@ -191,8 +190,8 @@
     </ons-page>
   </template>
 
-  <!--search modal-->
-  <ons-modal id="search-modal">
+  <!--search template-->
+  <template id="searchPage.html">
     <ons-page id="searchPage">
       <ons-toolbar>
         <div class="left">
@@ -201,7 +200,7 @@
           Searched Results
         </div>
         <div class="right">
-          <ons-back-button modifier="material outline" onclick="closeSeachModal()">
+          <ons-back-button modifier="material outline">
             <ons-icon icon="md-long-arrow-return"></ons-icon>
           </ons-back-button>
         </div>
@@ -210,12 +209,12 @@
         <ons-lazy-repeat id="lazy-searched-list"></ons-lazy-repeat>
       </ons-list>
     </ons-page>
-  </ons-modal>
+  </template>
 
 
 
-  <!--favorite modal-->
-  <ons-modal id="favourite-modal">
+  <!--favorite page-->
+  <template id="favouritePage.html">
     <ons-page id="favouritePage">
       <ons-toolbar>
         <div class="left">
@@ -224,7 +223,7 @@
           Favourite Verses
         </div>
         <div class="right">
-          <ons-back-button modifier="material outline" onclick="closeFavouriteModal()">
+          <ons-back-button modifier="material outline">
             <ons-icon icon="md-long-arrow-return"></ons-icon>
           </ons-back-button>
         </div>
@@ -232,7 +231,7 @@
       <ons-list id="favoriteList">
       </ons-list>
     </ons-page>
-  </ons-modal>
+  </template>
 
 
   <!--verse options--->

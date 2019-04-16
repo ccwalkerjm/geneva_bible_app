@@ -205,7 +205,7 @@ function addCapitalizedWords(words) {
     //check if already a capital
     if (
       key.slice(0, 1) === key.slice(0, 1).toLowerCase() &&
-      key.split(" ") === 1
+      key.split(" ").length === 1
     ) {
       expandedWords[key.slice(0, 1).toUpperCase() + key.slice(1)] =
         word.slice(0, 1).toUpperCase() + word.slice(1);
@@ -344,11 +344,11 @@ function getVersionName() {
 
 //////////////////////////////////
 //////verse object
+const _favoriteKey = "courserv_geneva_favorite_key";
 const _verseObj = {
   //data : {},
   addFavourite: function() {
-    const key = "courserv_geneva_favorite_key";
-    const favoriteList = localStorage.getItem(key);
+    const favoriteList = localStorage.getItem(_favoriteKey);
     if (favoriteList) {
       _verseObj.favoriteList = JSON.parse(favoriteList);
     } else {
@@ -364,7 +364,10 @@ const _verseObj = {
 
     if (!isBookmarkExits) {
       _verseObj.favoriteList.push(_verseObj.data);
-      localStorage.setItem(key, JSON.stringify(_verseObj.favoriteList));
+      localStorage.setItem(
+        _favoriteKey,
+        JSON.stringify(_verseObj.favoriteList)
+      );
     }
     _verseObj.hide();
   },
@@ -382,9 +385,14 @@ const _verseObj = {
     const verseX = _verseObj.data;
     _verseObj.hide();
     // book - version;
-    const copiedText = `${verseX.version}\n${
+    const url =
+      window.location.protocol +
+      "://" +
+      window.location.host +
+      `/?bk=${verseX.book_idx}&ch=${verseX.chapter_idx}&v=${verseX.verse_idx}`;
+    const copiedText = `<a href="${url}">${
       _books[verseX.book_idx].name
-    } ${verseX.chapter_idx + 1}:${verseX.verse_idx + 1}`;
+    } ${verseX.chapter_idx + 1}:${verseX.verse_idx + 1}</a>`;
     ons.notification.toast(`Verse: ${verseX.verse_idx + 1} Copied!`, {
       timeout: 2000,
       animation: "fall"
@@ -695,10 +703,6 @@ const gestureListner = function(event) {
 /////////////////////////////////
 //////////////////////////////////
 /// seach Bible ///////////////
-const closeSeachModal = function() {
-  document.querySelector("#search-modal").hide();
-};
-
 const getLazySearchDelegate = function(searchWord, searchList) {
   return {
     createItemContent: function(i) {
@@ -707,11 +711,11 @@ const getLazySearchDelegate = function(searchWord, searchList) {
 
       const replaceVerseMarker = ".....loading.....";
       const listItem = document.createElement("ons-list-item");
-      
+
       obj.version = 0;
       const verse_obj_str = btoa(JSON.stringify(obj));
       //const verse_obj_str = btoa(JSON.stringify(obj));
- //span attribute
+      //span attribute
 
       listItem.innerHTML =
         `<p><strong><span tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">` +
@@ -748,12 +752,12 @@ const getLazySearchDelegate = function(searchWord, searchList) {
           listItem.innerHTML = listItem.innerHTML.replace(
             replaceVerseMarker,
             enhancedVerse
-          );         
+          );
         } catch (e) {
           ons.notification.alert(e.message);
         }
       })();
-      return listItem; 
+      return listItem;
     },
     countItems: function() {
       return searchList.length;
@@ -762,9 +766,10 @@ const getLazySearchDelegate = function(searchWord, searchList) {
 };
 
 const searchBible = async function(e) {
-  document.querySelector("#searchedTitle").innerText = "Search Results..";
+  //document.querySelector("#searchedTitle").innerText = "Search Results..";
   let searchList = [];
   const searchWord = e.target.value;
+  if (searchWord.trim().length === 0) return;
   $loader.querySelector("p#loader-text").innerHTML =
     "..Searching Entire Bible..";
   $loader.show();
@@ -808,26 +813,103 @@ const searchBible = async function(e) {
     return;
   }
 
-  document.querySelector("#searchedTitle").innerText =
-    "Search Results..Amount Found:" + searchList.length;
-  const searchModal = document.querySelector("#search-modal");
-  var lazySearchedList = document.getElementById("lazy-searched-list");
-  lazySearchedList.delegate = getLazySearchDelegate(searchWord, searchList);
-  lazySearchedList.refresh();
-  searchModal.show();
+  //activate search page
+  _navigator
+    .pushPage("searchPage.html", {
+      data: { searchList: searchList, searchWord: searchWord }
+    })
+    .then();
 };
 ///////////////////////
 ////////////////////////
 
-const viewFavourite = function() {
-  const favModal = document.getElementById("favourite-modal");
-  favModal.show();
+const _favourite_obj = {
+  viewFavourite: function() {
+    _navigator.pushPage("favouritePage.html").then();
+  },
+  initFavourite: function() {
+    const listEl = document.querySelector("#favoriteList");
+    const favoriteStr = localStorage.getItem(_favoriteKey);
+    const favoriteList = favoriteStr ? JSON.parse(favoriteStr) : [];
+
+    listEl.innerHTML = "";
+    for (let i = 0; i < favoriteList.length; i++) {
+      const x = favoriteList[i];
+      const text =
+        _books[x.book_idx].name +
+        " " +
+        (x.chapter_idx + 1).toString() +
+        ":" +
+        (x.verse_idx + 1).toString();
+      listEl.appendChild(
+        ons.createElement(
+          `<ons-list-item modifier="tappable chevron" data-obj="${btoa(JSON.stringify(x))}" tappable onclick="_favourite_obj.gotoVerse(event)">    
+            <div class="center">
+              ${text}
+            </div>
+            <div class="right">
+              <ons-button onclick="_favourite_obj.deleteFavourite(event)"><ons-icon icon="md-delete"></ons-icon></ons-button>
+            </div>       
+          </ons-list-item`
+        )
+      );
+    }
+  },
+  gotoVerse: function(e) {
+    let node = e.target;
+    let i = 0;
+    while (node.tagName !== "ONS-LIST-ITEM" && i < 10) {
+      node = node.parentNode;
+      console.log(node.tagName + " data-obj", node.getAttribute("data-obj"));
+      i++;
+    }
+    const data = node.getAttribute("data-obj");
+    if (data) {
+      const favoriteStr = localStorage.getItem(_favoriteKey);
+      const favoriteList = favoriteStr ? JSON.parse(favoriteStr) : [];
+      const obj = JSON.parse(atob(data));
+      const idx = favoriteList.findIndex(
+        x =>
+          x.book_idx === obj.book_idx &&
+          x.chapter_idx === obj.chapter_idx &&
+          x.verse_idx === obj.verse_idx
+      );
+      if (idx >= 0) {
+        //   const urlParams = new URLSearchParams(window.location.search);
+        //const myParam = urlParams.get('myParam');
+        _book_index = obj.book_idx;
+        _chapter_index = obj.chapter_idx;
+        saveChapter();
+        selectBook(obj.book_idx, obj.chapter_idx);
+      }
+    }
+  },
+  deleteFavourite: function(e) {
+    let node = e.target;
+    let i = 0;
+    while (node.tagName !== "ONS-LIST-ITEM" && i < 10) {
+      node = node.parentNode;
+      console.log(node.tagName + " data-obj", node.getAttribute("data-obj"));
+      i++;
+    }
+    const data = node.getAttribute("data-obj");
+    if (data) {
+      const favoriteStr = localStorage.getItem(_favoriteKey);
+      const favoriteList = favoriteStr ? JSON.parse(favoriteStr) : [];
+      const obj = JSON.parse(atob(data));
+      const idx = favoriteList.findIndex(
+        x =>
+          x.book_idx === obj.book_idx &&
+          x.chapter_idx === obj.chapter_idx &&
+          x.verse_idx === obj.verse_idx
+      );
+      if (idx >= 0) favoriteList.splice(idx, 1);
+      localStorage.setItem(_favoriteKey, JSON.stringify(favoriteList));
+      _favourite_obj.initFavourite();
+    }
+  }
 };
 
-const closeFavouriteModal = function() {
-  const favModal = document.getElementById("favourite-modal");
-  favModal.hide();
-};
 //////////////////////////
 
 const process_bible_data = function(receivedWords) {
@@ -862,6 +944,8 @@ const process_bible_data = function(receivedWords) {
         .then();
     });
     const $chapSelector = document.querySelector("#chapter-selector");
+
+    //Event listener for Chapter selector
     $chapSelector.addEventListener("click", function(e) {
       _navigator
         .pushPage("bible-selection.html", {
@@ -870,9 +954,23 @@ const process_bible_data = function(receivedWords) {
         .then();
     });
 
-    [_book_index, _chapter_index] = getSavedChapter();
+    //check query string
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams) {
+      try {
+        _book_index = parseInt(urlParams.get("bk"));
+        _chapter_index = parseInt(urlParams.get("ch"));
+        if (!(_book_index >= 0 && _chapter_index >= 0)) throw "bad indexes";
+        const verse_idx = parseInt(urlParams.get("v"));
+        saveChapter();
+      } catch (e) {
+        [_book_index, _chapter_index] = getSavedChapter();
+        _book_index = _book_index || 0;
+        _chapter_index = _chapter_index || 0;
+      }
+    }
     selectBook(_book_index, _chapter_index);
-
+    //create verse options action sheet
     ons
       .createElement("verse-options.html", { append: true })
       .then(function(sheet) {
@@ -899,6 +997,9 @@ ons.ready(function() {
   document.addEventListener("show", function(event) {
     _currentPageId = event.target.id;
     if (_currentPageId === "mainPage") {
+      //clear search input
+      document.querySelector("ons-search-input").value = "";
+      //align verses
       alignVerses(event.target);
     }
   });
@@ -937,6 +1038,19 @@ ons.ready(function() {
       //dictionarySegment;
       document.addEventListener("postchange", loadDictionary);
       loadDictionary();
+    } else if (_currentPageId === "searchPage") {
+      const title = document.querySelector("#searchedTitle");
+      title.textContent = `Searched Word: ${
+        pageData.searchWord
+      } ..Amount Found: ${pageData.searchList.length}`;
+      var lazySearchedList = document.getElementById("lazy-searched-list");
+      lazySearchedList.delegate = getLazySearchDelegate(
+        pageData.searchWord,
+        pageData.searchList
+      );
+      lazySearchedList.refresh();
+    } else if (_currentPageId === "favouritePage") {
+      _favourite_obj.initFavourite();
     }
   });
 });
