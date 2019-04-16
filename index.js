@@ -301,6 +301,7 @@ function selectChapter(index) {
     const $item = ons.createElement(item);
     if (i === _selectedVerseIndex) {
       _selectedVerseItem = $item;
+      _selectedVerseItem.style = "color: #FF4444;";
     }
     $chapter.appendChild($item); //    $verseItem);
   }
