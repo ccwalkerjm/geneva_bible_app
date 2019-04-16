@@ -34,6 +34,8 @@ let _book_index = 0;
 let _chapter_index = 0;
 let _current_book;
 let _englishWords = {};
+let _selectedVerseItem,
+  _selectedVerseIndex = 0;
 
 //options constants and variables
 let _m_opts = {};
@@ -255,7 +257,7 @@ function getVerses(chapterText) {
 //select Chapter
 function selectChapter(index) {
   _chapter_index = index || 0; //_chapter_index;
-
+  _selectedVerseItem = null;
   //set book title
   const $bookSelector = document.querySelector("#book-selector");
   $bookSelector.innerHTML = _m_opts.title
@@ -296,7 +298,11 @@ function selectChapter(index) {
         1}&nbsp;</span></ons-col>` +
       `<ons-col><textarea class="${ta_class}" style="${ta_style}" readonly>${verse}</textarea>` +
       `</ons-col></ons-row></ons-list-item>`;
-    $chapter.appendChild(ons.createElement(item)); //    $verseItem);
+    const $item = ons.createElement(item);
+    if (i === _selectedVerseIndex) {
+      _selectedVerseItem = $item;
+    }
+    $chapter.appendChild($item); //    $verseItem);
   }
   _previous_book_chapter = getSavedChapter();
   saveChapter();
@@ -313,7 +319,11 @@ function alignVerses() {
   const [lastBookIdx, lastChapterIdx] = _previous_book_chapter;
   const isSameChapter =
     lastBookIdx === _book_index && lastChapterIdx === _chapter_index;
-  if (!isSameChapter) $mainPage.scrollTop = 0;
+
+  //scrolling action
+  if (_selectedVerseItem) _selectedVerseItem.scrollIntoView();
+  else if (!isSameChapter) $mainPage.scrollTop = 0;
+
   // we use the "data-adaptheight" attribute as a marker
   const $chapter = $mainPage.querySelector("#chapter");
   var textAreas = [].slice.call($chapter.querySelectorAll("textarea"));
@@ -327,6 +337,7 @@ function alignVerses() {
     // el.scrollHeight is the full height of the content, not just the visible part
     el.style.height = el.scrollHeight + diff + "px";
   });
+
   //set help
   if (_m_opts.helpMode) showHelp();
 }
@@ -387,7 +398,7 @@ const _verseObj = {
     // book - version;
     const url =
       window.location.protocol +
-      "://" +
+      "//" +
       window.location.host +
       `/?bk=${verseX.book_idx}&ch=${verseX.chapter_idx}&v=${verseX.verse_idx}`;
     const copiedText = `<a href="${url}">${
@@ -843,7 +854,9 @@ const _favourite_obj = {
         (x.verse_idx + 1).toString();
       listEl.appendChild(
         ons.createElement(
-          `<ons-list-item modifier="tappable chevron" data-obj="${btoa(JSON.stringify(x))}" tappable onclick="_favourite_obj.gotoVerse(event)">    
+          `<ons-list-item modifier="tappable chevron" data-obj="${btoa(
+            JSON.stringify(x)
+          )}" tappable onclick="_favourite_obj.gotoVerse(event)">    
             <div class="center">
               ${text}
             </div>
@@ -879,6 +892,7 @@ const _favourite_obj = {
         //const myParam = urlParams.get('myParam');
         _book_index = obj.book_idx;
         _chapter_index = obj.chapter_idx;
+        _selectedVerseIndex = obj.verse_idx;
         saveChapter();
         selectBook(obj.book_idx, obj.chapter_idx);
       }
@@ -961,7 +975,7 @@ const process_bible_data = function(receivedWords) {
         _book_index = parseInt(urlParams.get("bk"));
         _chapter_index = parseInt(urlParams.get("ch"));
         if (!(_book_index >= 0 && _chapter_index >= 0)) throw "bad indexes";
-        const verse_idx = parseInt(urlParams.get("v"));
+        _selectedVerseIndex = parseInt(urlParams.get("v"));
         saveChapter();
       } catch (e) {
         [_book_index, _chapter_index] = getSavedChapter();
@@ -1027,6 +1041,7 @@ ons.ready(function() {
       });
     } else if (_currentPageId === "bible-selection") {
       //
+      _selectedVerseIndex = 0;
       switch (pageData.type) {
         case "book":
           return populateBooks();
