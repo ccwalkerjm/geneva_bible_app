@@ -36,7 +36,7 @@ let _chapter_index = 0;
 let _current_book;
 let _englishWords = {};
 let _selectedVerseItem;
-let  _selectedVerseIndex = ILLEGAL_VERSE_NUMBER;
+let _selectedVerseIndex = ILLEGAL_VERSE_NUMBER;
 
 //options constants and variables
 let _m_opts = {};
@@ -142,7 +142,7 @@ function getChapters(e) {
   $chapterList.style.display = "block";
   $chapterList.innerHTML = "";
   //const substring = "<li><a href";
-  const $modalTitle = document.querySelector(".modal-title");
+  const $modalTitle = document.querySelector(".bible-selection-title");
   $modalTitle.textContent = _books[_book_index].name;
 
   for (let i = 0; i < _books[_book_index].chapters; i++) {
@@ -465,7 +465,7 @@ function populateBooks(selectOrderTriggered) {
   const $booklist = document.querySelector("#book-list");
   $booklist.style.display = "block";
   $booklist.innerHTML = "";
-  const $modalTitle = document.querySelector(".modal-title");
+  const $modalTitle = document.querySelector(".bible-selection-title");
   $modalTitle.textContent = "Books";
 
   let book_indexes = JSON.parse(JSON.stringify(_books));
@@ -1046,6 +1046,7 @@ ons.ready(function() {
     } else if (_currentPageId === "bible-selection") {
       //
       _selectedVerseIndex = ILLEGAL_VERSE_NUMBER;
+      document.querySelector("ons-back-button").onClick = manageBackButton;
       switch (pageData.type) {
         case "book":
           return populateBooks();
@@ -1059,9 +1060,9 @@ ons.ready(function() {
       loadDictionary();
     } else if (_currentPageId === "searchPage") {
       const title = document.querySelector("#searchedTitle");
-      title.textContent = `Searched Word: ${
+      title.innerHTML = `Searched Word: <strong>${
         pageData.searchWord
-      } ..Amount Found: ${pageData.searchList.length}`;
+      }</strong> ..Count: ${pageData.searchList.length}`;
       var lazySearchedList = document.getElementById("lazy-searched-list");
       lazySearchedList.delegate = getLazySearchDelegate(
         pageData.searchWord,
