@@ -296,11 +296,11 @@ function selectChapter(index) {
     const ta_style = "width:" + (_maxWidth - 100).toString() + "px";
     const ta_class = "textarea textarea--transparent verse";
     const item =
-      `<ons-list-item modifier="material><ons-row>` +
-      `<ons-col width="100px"><span class="verse" tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">${i +
-        1}&nbsp;</span></ons-col>` +
-      `<ons-col><textarea class="${ta_class}" style="${ta_style}" readonly>${verse}</textarea>` +
-      `</ons-col></ons-row></ons-list-item>`;
+      `<ons-list-item modifier="material>` +
+      `<div class="center"><span class="verse" tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">${i +
+        1}</span>` +
+      `<textarea class="${ta_class}" style="${ta_style}" readonly>${verse}</textarea>` +
+      `</div></ons-list-item>`;
     const $item = ons.createElement(item);
     if (i === _selectedVerseIndex) {
       _selectedVerseItem = $item;
