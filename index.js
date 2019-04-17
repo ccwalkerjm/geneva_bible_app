@@ -733,7 +733,7 @@ const getLazySearchDelegate = function(searchWord, searchList) {
       //span attribute
 
       listItem.innerHTML =
-        `<div class="center"><span class="list-item__title" tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">` +
+        `<div class="center"><span class="list-item__title verse-title" tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">` +
         `${i + 1}:` +
         ` ${book.name} ${obj.chapter_idx + 1}:` +
         `${obj.verse_idx + 1}` +

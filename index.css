@@ -4,6 +4,10 @@
 }
 
 
+.verse-title {   
+    font-weight: bold;
+}
+
 span.verse {   
     font-weight: bold;
     margin-left: 0;
