@@ -28,14 +28,15 @@ let $mainPage;
 let $bookSelector;
 let $loader;
 
+const ILLEGAL_VERSE_NUMBER = -1;
 //bible variables
 let _books;
 let _book_index = 0;
 let _chapter_index = 0;
 let _current_book;
 let _englishWords = {};
-let _selectedVerseItem,
-  _selectedVerseIndex = 0;
+let _selectedVerseItem;
+let  _selectedVerseIndex = ILLEGAL_VERSE_NUMBER;
 
 //options constants and variables
 let _m_opts = {};
@@ -162,7 +163,7 @@ function get_previous_chapter() {
   } else {
     _chapter_index -= 1;
   }
-  _selectedVerseIndex = 0;
+  _selectedVerseIndex = ILLEGAL_VERSE_NUMBER;
   selectBook(_book_index, _chapter_index);
 }
 
@@ -174,7 +175,7 @@ function get_next_chapter() {
   } else {
     _chapter_index += 1;
   }
-  _selectedVerseIndex = 0;
+  _selectedVerseIndex = ILLEGAL_VERSE_NUMBER;
   selectBook(_book_index, _chapter_index);
 }
 
@@ -732,12 +733,12 @@ const getLazySearchDelegate = function(searchWord, searchList) {
       //span attribute
 
       listItem.innerHTML =
-        `<p><strong><span tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">` +
+        `<div class="center"><span class="list-item__title" tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">` +
         `${i + 1}:` +
         ` ${book.name} ${obj.chapter_idx + 1}:` +
         `${obj.verse_idx + 1}` +
-        `</span></strong><br/>` +
-        `${replaceVerseMarker}</p>`;
+        `</span>` +
+        `<p>${replaceVerseMarker}</p></div>`;
 
       (async function() {
         try {
@@ -1044,7 +1045,7 @@ ons.ready(function() {
       });
     } else if (_currentPageId === "bible-selection") {
       //
-      _selectedVerseIndex = 0;
+      _selectedVerseIndex = ILLEGAL_VERSE_NUMBER;
       switch (pageData.type) {
         case "book":
           return populateBooks();
