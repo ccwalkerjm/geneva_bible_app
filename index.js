@@ -162,6 +162,7 @@ function get_previous_chapter() {
   } else {
     _chapter_index -= 1;
   }
+  _selectedVerseIndex = 0;
   selectBook(_book_index, _chapter_index);
 }
 
@@ -173,6 +174,7 @@ function get_next_chapter() {
   } else {
     _chapter_index += 1;
   }
+  _selectedVerseIndex = 0;
   selectBook(_book_index, _chapter_index);
 }
 
