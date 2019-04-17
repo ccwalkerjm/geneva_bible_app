@@ -257,6 +257,17 @@ function getVerses(chapterText) {
     .map(x => x.replace(/<span[^>]*>.*?<\/span>/, ""));
 }
 
+function formatVerseNumber(verseIndex) {
+  const verseNoStr = (verseIndex+1).toString().trim();
+  if (verseIndex < 9) {
+    return "&nbsp;&nbsp;" + verseNoStr;
+  } else if (verseIndex < 99) {
+    return "&nbsp;" + verseNoStr;
+  } else {
+    return verseNoStr;
+  }
+}
+
 //select Chapter
 function selectChapter(index) {
   _chapter_index = index || 0; //_chapter_index;
@@ -297,8 +308,7 @@ function selectChapter(index) {
     const ta_class = "textarea textarea--transparent verse";
     const item =
       `<ons-list-item modifier="material>` +
-      `<div class="center"><span class="verse" tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">${i +
-        1}</span>` +
+      `<div class="center"><span class="verse" tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">${formatVerseNumber(i)}</span>` +
       `<textarea class="${ta_class}" style="${ta_style}" readonly>${verse}</textarea>` +
       `</div></ons-list-item>`;
     const $item = ons.createElement(item);
@@ -619,6 +629,13 @@ const helpTargets = [
     message:
       "Tap this Button to view the dictionary between the old english words and the modern words",
     header: "Dictionary",
+    direction: "down"
+  },
+  {
+    target: "#favouriteBtn",
+    message:
+      "Tap this Button to view the Bookmarks. You will be able to select or delete a bookmark",
+    header: "Bookmarks",
     direction: "down"
   },
   {
