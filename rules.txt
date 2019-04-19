@@ -1,0 +1,3 @@
+special rules
+These words will be replaced by an arbitrary unique word 
+and then replace appropriately

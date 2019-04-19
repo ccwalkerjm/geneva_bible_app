@@ -38,52 +38,57 @@
     <ons-page id="mainPage">
       <ons-toolbar>
         <div class="left">
-          <ons-toolbar-button id="help-selector" onclick="showHelp()" modifier="material outline" title="Help Guide">
-            <ons-icon icon="md-help"></ons-icon>
-          </ons-toolbar-button>
-          <ons-toolbar-button id="dictionary" onclick="viewDictionary()" modifier="material outline" title="Dictionary">
-            <ons-icon icon="md-library"></ons-icon>
-          </ons-toolbar-button>
-          <ons-toolbar-button id="favouriteBtn" onclick="_favourite_obj.viewFavourite()" modifier="material outline"
-            title="Bookmarks">
-            <ons-icon icon="md-favorite"></ons-icon>
-          </ons-toolbar-button>
-        </div>
-        <div class="center">
           <ons-toolbar-button id="book-selector" modifier="material outline">
           </ons-toolbar-button>
           <ons-toolbar-button id="chapter-selector" modifier="material outline">
           </ons-toolbar-button>
         </div>
         <div class="right">
-          <p style="text-align: center; margin-top: 10px;">
-            <ons-search-input id="search-input" placeholder="Search Entire Bible" onchange="searchBible(event)">
-            </ons-search-input>
-          </p>
+          <ons-toolbar-button id="menu" onclick="launchSpeedDialer()" modifier="material outline">
+            <ons-icon icon="md-menu"></ons-icon>
+          </ons-toolbar-button>
         </div>
       </ons-toolbar>
+      
+      <ons-speed-dial position="bottom right" direction="up">
+        <ons-fab>
+        </ons-fab>
+        <ons-speed-dial-item id="dictionary" onclick="viewDictionary()" modifier="material outline" title="Dictionary">
+          <ons-icon icon="md-library"></ons-icon>
+        </ons-speed-dial-item>
+        <ons-speed-dial-item id="favouriteBtn" onclick="_favourite_obj.viewFavourite()" modifier="material outline"
+          title="Bookmarks">
+          <ons-icon icon="md-favorite"></ons-icon>
+        </ons-speed-dial-item>
+        <ons-speed-dial-item id="searchBtn" onclick="searchObj.viewSearchPage()" modifier="material outline"
+          title="Search">
+          <ons-icon icon="md-search"></ons-icon>
+        </ons-speed-dial-item>
+        <ons-speed-dial-item id="help-selector" onclick="showHelp()" modifier="material outline" title="Help Guide">
+          <ons-icon icon="md-help"></ons-icon>
+        </ons-speed-dial-item>
+      </ons-speed-dial>
+
       <ons-list id="chapter"></ons-list>
+
       <ons-bottom-toolbar modifier="aligned">
         <ons-row>
-          <ons-col width="30%">
-            <div style="margin-left: 10pt;margin-top: 2pt">
+          <ons-col>
+            <p style="margin-left: 10px;margin-top: 5px;text-align: left">
               <ons-select id="book-version" onchange="setVersion(event)">
                 <option>1599</option>
                 <option>Modern</option>
                 <option>Sacred</option>
               </ons-select>
-            </div>
+            </p>
           </ons-col>
-          <ons-col width="40%">
-            <div class="copyright">
-              &copy;2019 CCW
-            </div>
-          </ons-col>
-          <ons-col width="30%">
-            <ons-select id="title-type" onchange="setTitle(event)">
-              <option>Normal</option>
-              <option>Code</option>
-            </ons-select>
+          <ons-col>
+            <p style="text-align: right; margin-top: 5px; margin-right:10px ">
+              <ons-select id="title-type" onchange="setTitle(event)">
+                <option>Normal</option>
+                <option>Code</option>
+              </ons-select>
+            </p>
           </ons-col>
         </ons-row>
       </ons-bottom-toolbar>
@@ -163,21 +168,21 @@
           </ons-back-button>
         </div>
         <div class="center">
-          <span style="margin-left: 50px">Dictionary</span>
-          <ons-segment id="dictionarySegment" style="width: 180px">
-            <button>Common</button>
-            <button>Names</button>
-            <button>Phrases</button>
-          </ons-segment>
+          Dictionary
         </div>
       </ons-toolbar>
       <ons-list-title></ons-list-title>
       <ons-list id="words">
         <ons-lazy-repeat id="lazy-word-list"></ons-lazy-repeat>
       </ons-list>
-      <ons-bottom-toolbar modifier="aligned">
-        <ons-row>
-        </ons-row>
+      <ons-bottom-toolbar>
+        <p style="text-align: center; margin-top: 10px;">
+          <ons-segment id="dictionarySegment" style="width: 180px">
+            <button>Common</button>
+            <button>Names</button>
+            <button>Phrases</button>
+          </ons-segment>
+        </p>
       </ons-bottom-toolbar>
     </ons-page>
   </template>
@@ -190,15 +195,19 @@
           <ons-back-button modifier="material outline">
           </ons-back-button>
         </div>
-        <div class="center" id="searchedTitle">
-          Searched Results
-        </div>
-        <div class="right">
+        <div class="center">
+          <p style="text-align: center; margin-top: 10px;">
+            <ons-search-input placeholder="Search Bible" onchange="searchObj.searchBible(event)">
+            </ons-search-input>
+          </p>
         </div>
       </ons-toolbar>
       <ons-list id="SearchedList">
         <ons-lazy-repeat id="lazy-searched-list"></ons-lazy-repeat>
       </ons-list>
+      <ons-bottom-toolbar>
+        <p id="searchedStatus" style="text-align: center;"></p>
+      </ons-bottom-toolbar>
     </ons-page>
   </template>
 
@@ -212,7 +221,7 @@
           <ons-back-button modifier="material outline">
           </ons-back-button>
         </div>
-        <div class="center" id="searchedTitle">
+        <div class="center">
           Bookmarks
         </div>
         <div class="right">

@@ -258,7 +258,7 @@ function getVerses(chapterText) {
 }
 
 function formatVerseNumber(verseIndex) {
-  const verseNoStr = (verseIndex+1).toString().trim();
+  const verseNoStr = (verseIndex + 1).toString().trim();
   if (verseIndex < 9) {
     return "&nbsp;&nbsp;" + verseNoStr;
   } else if (verseIndex < 99) {
@@ -308,7 +308,9 @@ function selectChapter(index) {
     const ta_class = "textarea textarea--transparent verse";
     const item =
       `<ons-list-item modifier="material>` +
-      `<div class="center"><span class="verse" tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">${formatVerseNumber(i)}</span>` +
+      `<div class="center"><span class="verse" tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">${formatVerseNumber(
+        i
+      )}</span>` +
       `<textarea class="${ta_class}" style="${ta_style}" readonly>${verse}</textarea>` +
       `</div></ons-list-item>`;
     const $item = ons.createElement(item);
@@ -618,26 +620,21 @@ const manageBackButton = function() {
 };
 
 const helpTargets = [
-  {
-    target: "#help-selector",
-    message: "Tap here to get help.",
-    header: "Help",
-    direction: "down"
-  },
-  {
+  
+  /* {
     target: "#dictionary",
     message:
       "Tap this Button to view the dictionary between the old english words and the modern words",
     header: "Dictionary",
-    direction: "down"
+    direction: "up"
   },
   {
     target: "#favouriteBtn",
     message:
       "Tap this Button to view the Bookmarks. You will be able to select or delete a bookmark",
     header: "Bookmarks",
-    direction: "down"
-  },
+    direction: "up"
+  },*/
   {
     target: "#book-selector",
     message: "Tap Book Title to Change to another Book",
@@ -651,12 +648,20 @@ const helpTargets = [
     direction: "down"
   },
   {
-    target: "#search-input",
+    target: "#menu",
+    message:
+      "Tap here for the Menu. You will be able to " +
+      "select the Dictionary, Bookmark Manager and a Search Tool",
+    header: "Menu",
+    direction: "down"
+  },
+  /* {
+    target: "#searchBtn",
     message:
       "Search the Bible here. Enter a word and tap the enter key to search the entire Bible.",
     header: "Bible Search",
-    direction: "down"
-  },
+    direction: "up"
+  }, */
   {
     target: "#book-version",
     message:
@@ -735,122 +740,142 @@ const gestureListner = function(event) {
 /////////////////////////////////
 //////////////////////////////////
 /// seach Bible ///////////////
-const getLazySearchDelegate = function(searchWord, searchList) {
-  return {
-    createItemContent: function(i) {
-      let obj = searchList[i];
-      let book = _books[obj.book_idx];
 
-      const replaceVerseMarker = ".....loading.....";
-      const listItem = document.createElement("ons-list-item");
+const searchObj = {
+  viewSearchPage: function() {
+    //activate search page
+    _navigator.pushPage("searchPage.html"); //, {
+    //  data: { searchList: searchList, searchWord: searchWord }
+    //})
+    //.then();
+  },
 
-      obj.version = 0;
-      const verse_obj_str = btoa(JSON.stringify(obj));
-      //const verse_obj_str = btoa(JSON.stringify(obj));
-      //span attribute
+  getLazySearchDelegate: function(searchWord, searchList) {
+    return {
+      createItemContent: function(i) {
+        let obj = searchList[i];
+        let book = _books[obj.book_idx];
 
-      listItem.innerHTML =
-        `<div class="center"><span class="list-item__title verse-title" tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">` +
-        `${i + 1}:` +
-        ` ${book.name} ${obj.chapter_idx + 1}:` +
-        `${obj.verse_idx + 1}` +
-        `</span>` +
-        `<p>${replaceVerseMarker}</p></div>`;
+        const replaceVerseMarker = ".....loading.....";
+        const listItem = document.createElement("ons-list-item");
 
-      (async function() {
-        try {
-          const resp = await fetch(`books/${book.code}.json`);
-          let book_chapters = await resp.json();
-          const encoded_text = book_chapters[obj.chapter_idx];
-          let chapterText = atob(encoded_text);
+        obj.version = 0;
+        const verse_obj_str = btoa(JSON.stringify(obj));
+        //const verse_obj_str = btoa(JSON.stringify(obj));
+        //span attribute
 
-          let verse = getVerses(chapterText)[obj.verse_idx];
+        listItem.innerHTML =
+          `<div class="center"><span class="list-item__title verse-title" tappable data-obj="${verse_obj_str}" onclick="_verseObj.trigger(event)">` +
+          `${i + 1}:` +
+          ` ${book.name} ${obj.chapter_idx + 1}:` +
+          `${obj.verse_idx + 1}` +
+          `</span>` +
+          `<p>${replaceVerseMarker}</p></div>`;
 
-          const offset = 0;
-          const startIdx =
-            obj.char_index - offset >= 0 ? obj.char_index - offset : 0;
-          const endIdx =
-            verse.length >= obj.char_index + searchWord.length + offset
-              ? obj.char_index + searchWord.length + offset
-              : verse.length;
-          const enhancedVerse =
-            "<p>" +
-            verse.slice(0, startIdx) +
-            "<strong>" +
-            verse.slice(startIdx, endIdx) +
-            "</strong>" +
-            verse.slice(endIdx) +
-            "</p>";
-          listItem.innerHTML = listItem.innerHTML.replace(
-            replaceVerseMarker,
-            enhancedVerse
-          );
-        } catch (e) {
-          ons.notification.alert(e.message);
-        }
-      })();
-      return listItem;
-    },
-    countItems: function() {
-      return searchList.length;
-    }
-  };
-};
+        (async function() {
+          try {
+            const resp = await fetch(`books/${book.code}.json`);
+            let book_chapters = await resp.json();
+            const encoded_text = book_chapters[obj.chapter_idx];
+            let chapterText = atob(encoded_text);
 
-const searchBible = async function(e) {
-  //document.querySelector("#searchedTitle").innerText = "Search Results..";
-  let searchList = [];
-  const searchWord = e.target.value;
-  if (searchWord.trim().length === 0) return;
-  $loader.querySelector("p#loader-text").innerHTML =
-    "..Searching Entire Bible..";
-  $loader.show();
-  for (let book_idx = 0; book_idx < _books.length; book_idx++) {
-    const book_code = _books[book_idx].code;
+            let verse = getVerses(chapterText)[obj.verse_idx];
 
-    const resp = await fetch(`books/${book_code}.json`);
-    const book_chapters = await resp.json();
-
-    for (let chap_idx = 0; chap_idx < book_chapters.length; chap_idx++) {
-      const encoded_text = book_chapters[chap_idx];
-      let chapterText = atob(encoded_text);
-
-      let verses = getVerses(chapterText);
-
-      for (let verse_idx = 0; verse_idx < verses.length; verse_idx++) {
-        //search chapter
-        let verse = verses[verse_idx];
-
-        const regex = new RegExp("\\b" + searchWord + "\\b", "gi");
-        let m;
-        do {
-          m = regex.exec(verse);
-          if (m) {
-            searchList.push({
-              book_idx: book_idx,
-              chapter_idx: chap_idx,
-              verse_idx: verse_idx,
-              char_index: m.index
-            });
+            const offset = 0;
+            const startIdx =
+              obj.char_index - offset >= 0 ? obj.char_index - offset : 0;
+            const endIdx =
+              verse.length >= obj.char_index + searchWord.length + offset
+                ? obj.char_index + searchWord.length + offset
+                : verse.length;
+            const enhancedVerse =
+              "<p>" +
+              verse.slice(0, startIdx) +
+              "<strong>" +
+              verse.slice(startIdx, endIdx) +
+              "</strong>" +
+              verse.slice(endIdx) +
+              "</p>";
+            listItem.innerHTML = listItem.innerHTML.replace(
+              replaceVerseMarker,
+              enhancedVerse
+            );
+          } catch (e) {
+            ons.notification.alert(e.message);
           }
-        } while (m);
+        })();
+        return listItem;
+      },
+      countItems: function() {
+        return searchList.length;
+      }
+    };
+  },
+
+  searchBible: async function(e) {
+    //document.querySelector("#searchedStatus").innerText = "Search Results..";
+    let searchList = [];
+    const searchWord = e.target.value;
+    if (searchWord.trim().length === 0) return;
+    $loader.querySelector("p#loader-text").innerHTML =
+      "..Searching Entire Bible..";
+    $loader.show();
+    for (let book_idx = 0; book_idx < _books.length; book_idx++) {
+      const book_code = _books[book_idx].code;
+
+      const resp = await fetch(`books/${book_code}.json`);
+      const book_chapters = await resp.json();
+
+      for (let chap_idx = 0; chap_idx < book_chapters.length; chap_idx++) {
+        const encoded_text = book_chapters[chap_idx];
+        let chapterText = atob(encoded_text);
+
+        let verses = getVerses(chapterText);
+
+        for (let verse_idx = 0; verse_idx < verses.length; verse_idx++) {
+          //search chapter
+          let verse = verses[verse_idx];
+
+          const regex = new RegExp("\\b" + searchWord + "\\b", "gi");
+          let m;
+          do {
+            m = regex.exec(verse);
+            if (m) {
+              searchList.push({
+                book_idx: book_idx,
+                chapter_idx: chap_idx,
+                verse_idx: verse_idx,
+                char_index: m.index
+              });
+            }
+          } while (m);
+        }
       }
     }
-  }
-  //console.log(searchList);
-  $loader.hide();
+    //console.log(searchList);
+    $loader.hide();
 
-  if (searchList.length === 0) {
-    ons.notification.alert("No Result Found!!");
-    return;
-  }
+    if (searchList.length === 0) {
+      ons.notification.alert("No Result Found!!");
+      return;
+    }
+    //clear search input
+    document.querySelector("ons-search-input").value = "";
+    const searchedStatus = document.querySelector("#searchedStatus");
+    searchedStatus.innerHTML = `Word: ${searchWord} ..Found: ${
+      searchList.length
+    }`;
+    var lazySearchedList = document.getElementById("lazy-searched-list");
+    lazySearchedList.delegate = searchObj.getLazySearchDelegate(
+      searchWord,
+      searchList
+    );
+    lazySearchedList.refresh();
 
-  //activate search page
-  _navigator
-    .pushPage("searchPage.html", {
-      data: { searchList: searchList, searchWord: searchWord }
-    })
-    .then();
+    /////////////////////
+    /////////////////////
+    /////////////////////
+  }
 };
 ///////////////////////
 ////////////////////////
@@ -945,6 +970,11 @@ const _favourite_obj = {
   }
 };
 
+let speedDialer;
+function launchSpeedDialer() {
+  speedDialer.toggleItems();
+}
+
 //////////////////////////
 
 const process_bible_data = function(receivedWords) {
@@ -1032,9 +1062,8 @@ ons.ready(function() {
   document.addEventListener("show", function(event) {
     _currentPageId = event.target.id;
     if (_currentPageId === "mainPage") {
-      //clear search input
-      document.querySelector("ons-search-input").value = "";
       //align verses
+      speedDialer.hide();
       alignVerses(event.target);
     }
   });
@@ -1044,6 +1073,10 @@ ons.ready(function() {
     if (_currentPageId === "mainPage") {
       $mainPage = event.target;
       _maxWidth = $mainPage.offsetWidth;
+
+      //speed dialer
+      speedDialer = document.querySelector("ons-speed-dial");
+      //speedDialer.hide();
 
       //set gesture events
       const $chapter = document.querySelector("#chapter");
@@ -1076,16 +1109,6 @@ ons.ready(function() {
       document.addEventListener("postchange", loadDictionary);
       loadDictionary();
     } else if (_currentPageId === "searchPage") {
-      const title = document.querySelector("#searchedTitle");
-      title.innerHTML = `Searched Word: <strong>${
-        pageData.searchWord
-      }</strong> ..Count: ${pageData.searchList.length}`;
-      var lazySearchedList = document.getElementById("lazy-searched-list");
-      lazySearchedList.delegate = getLazySearchDelegate(
-        pageData.searchWord,
-        pageData.searchList
-      );
-      lazySearchedList.refresh();
     } else if (_currentPageId === "favouritePage") {
       _favourite_obj.initFavourite();
     }
