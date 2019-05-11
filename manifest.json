@@ -1,7 +1,7 @@
 {
     "name": "Adaptable Geneva Bible",
     "short_name": "Geneva Bible",
-    "start_url": "https://ccwalkerjm.github.io/geneva_bible_app/",    
+    "start_url": "/",    
     "display": "standalone",
     "theme_color": "#ef4e2a",
     "background_color": "#fff",

@@ -1,0 +1,14 @@
+<RoutingRules>
+    <RoutingRule>
+        <Condition>
+            <KeyPrefixEquals>modern-translation.json</KeyPrefixEquals>
+            <HttpErrorCodeReturnedEquals>403</HttpErrorCodeReturnedEquals >
+        </Condition>
+        <Redirect>
+            <Protocol>https</Protocol>
+            <HostName>0iqwm02m23.execute-api.us-east-1.amazonaws.com</HostName>
+            <ReplaceKeyPrefixWith>prod/geneva-bible-process</ReplaceKeyPrefixWith>
+            <HttpRedirectCode>307</HttpRedirectCode>
+        </Redirect>
+    </RoutingRule>
+</RoutingRules>

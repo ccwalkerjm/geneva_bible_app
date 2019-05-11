@@ -34,7 +34,7 @@ let _books;
 let _book_index = 0;
 let _chapter_index = 0;
 let _current_book;
-let _englishWords = {};
+//let _englishWords = {};
 let _selectedVerseItem;
 let _selectedVerseIndex = ILLEGAL_VERSE_NUMBER;
 
@@ -620,7 +620,6 @@ const manageBackButton = function() {
 };
 
 const helpTargets = [
-  
   /* {
     target: "#dictionary",
     message:
@@ -977,13 +976,13 @@ function launchSpeedDialer() {
 
 //////////////////////////
 
-const process_bible_data = function(receivedWords) {
+const process_bible_data = function() {
   try {
-    if (receivedWords && typeof receivedWords === "object") {
+    if (_englishWords && typeof _englishWords === "object") {
       //save downloaded words  ---this is not cached.
       localStorage.setItem(
         STORAGE_ENGLISH_WORDS_KEY,
-        JSON.stringify(receivedWords)
+        JSON.stringify(_englishWords)
       );
     }
     //get saved words regardless
@@ -1048,6 +1047,11 @@ const process_bible_data = function(receivedWords) {
   });
 };
 
+//var tag = document.createElement("script");
+//tag.src = `somewhere_else.php?callback=foo`;
+
+//document.getElementsByTagName("head")[0].appendChild(tag);
+
 let _maxWidth; // = $mainPage.offsetWidth;
 ons.ready(function() {
   //
@@ -1088,11 +1092,10 @@ ons.ready(function() {
       $loader.querySelector("p#loader-text").innerHTML =
         "..Loading Bible Meta Data..";
       $loader.show();
-      $.get("english.json", function(englishWords) {
-        process_bible_data(englishWords);
-      }).fail(function() {
-        process_bible_data();
-      });
+
+      //process english words
+      process_bible_data(_englishWords);
+
     } else if (_currentPageId === "bible-selection") {
       //
       _selectedVerseIndex = ILLEGAL_VERSE_NUMBER;

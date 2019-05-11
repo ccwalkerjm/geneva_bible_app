@@ -12,7 +12,7 @@ self.addEventListener('install', function (e) {
             // If the request for any of these resources fails, _none_ of the resources will be
             // added to the cache.
             return cache.addAll([
-                'https://ccwalkerjm.github.io/geneva_bible_app/',
+                '/',
                 'index.html',
                 'index.css',
                 'index.js',
