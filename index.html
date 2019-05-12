@@ -52,30 +52,36 @@
           </ons-toolbar-button>
         </div>
         <div class="right">
-          <ons-toolbar-button id="menu" onclick="launchSpeedDialer()" modifier="material outline">
+          <ons-toolbar-button id="menu" onclick="showMenuDialog()" modifier="material outline">
             <ons-icon icon="md-menu"></ons-icon>
           </ons-toolbar-button>
         </div>
       </ons-toolbar>
 
-      <ons-speed-dial position="bottom right" direction="up">
-        <ons-fab>
-        </ons-fab>
-        <ons-speed-dial-item id="dictionary" onclick="viewDictionary()" modifier="material outline" title="Dictionary">
-          <ons-icon icon="md-library"></ons-icon>
-        </ons-speed-dial-item>
-        <ons-speed-dial-item id="favouriteBtn" onclick="_favourite_obj.viewFavourite()" modifier="material outline"
-          title="Bookmarks">
-          <ons-icon icon="md-favorite"></ons-icon>
-        </ons-speed-dial-item>
-        <ons-speed-dial-item id="searchBtn" onclick="searchObj.viewSearchPage()" modifier="material outline"
-          title="Search">
-          <ons-icon icon="md-search"></ons-icon>
-        </ons-speed-dial-item>
-        <ons-speed-dial-item id="help-selector" onclick="showHelp()" modifier="material outline" title="Help Guide">
-          <ons-icon icon="md-help"></ons-icon>
-        </ons-speed-dial-item>
-      </ons-speed-dial>
+
+      <ons-dialog id="menuDialog">
+        <div style="text-align: center; padding: 10px;">
+          <h4>Menu</h4>
+          <ons-list>
+            <ons-list-item id="dictionary" onclick="viewDictionary()" modifier="material outline" tappable>
+              <ons-icon icon="md-library"></ons-icon>&nbsp; Dictionary
+            </ons-list-item>
+            <ons-list-item id="favouriteBtn" onclick="_favourite_obj.viewFavourite()" modifier="material outline"
+              tappable>
+              <ons-icon icon="md-favorite"></ons-icon>&nbsp; Bookmarks
+            </ons-list-item>
+            <ons-list-item id="searchBtn" onclick="searchObj.viewSearchPage()" modifier="material outline" tappable>
+              <ons-icon icon="md-search"></ons-icon>&nbsp; Search Bible
+            </ons-list-item>
+            <ons-list-item id="help-selector" onclick="showHelp()" modifier="material outline" tappable>
+              <ons-icon icon="md-help"></ons-icon>&nbsp; Help Guide
+            </ons-list-item>
+          </ons-list>
+          <p>
+            <ons-button onclick="hideDialog()">Close</ons-button>
+          </p>
+        </div>
+      </ons-dialog>
 
       <ons-list id="chapter"></ons-list>
 
@@ -102,6 +108,10 @@
       </ons-bottom-toolbar>
     </ons-page>
   </template>
+
+
+
+
 
   <template id="bible-selection.html">
     <!----ons-modal id="bible-selection-modal" direction="up"-->

@@ -342,11 +342,11 @@ function alignVerses() {
 
   // we use the "data-adaptheight" attribute as a marker
   const $chapter = $mainPage.querySelector("#chapter");
-  var textAreas = [].slice.call($chapter.querySelectorAll("textarea"));
+  const textAreas = [].slice.call($chapter.querySelectorAll("textarea"));
   textAreas.forEach(function(el) {
-    //var minHeight = el.scrollHeight;
-    var outerHeight = parseInt(window.getComputedStyle(el).height, 10);
-    var diff = outerHeight - el.clientHeight;
+    //const minHeight = el.scrollHeight;
+    const outerHeight = parseInt(window.getComputedStyle(el).height, 10);
+    const diff = outerHeight - el.clientHeight;
     // set the height to 0 in case of it has to be shrinked
     //el.style.height = 0;
     // set the correct height
@@ -577,7 +577,7 @@ const loadDictionary = function(event) {
   $titleItem.setAttribute("modifier", "material"); // nodivider");
   $titleItem.innerHTML = titleRow.outerHTML;
 
-  var lazyWordList = document.getElementById("lazy-word-list");
+  const lazyWordList = document.getElementById("lazy-word-list");
   lazyWordList.delegate = {
     createItemContent: function(i) {
       const itemRow = document.createElement("ons-row");
@@ -677,15 +677,15 @@ const helpTargets = [
   }
 ];
 
-var hidePopover = function() {
+const hidePopover = function() {
   _m_opts.helpMode = false;
   setOptions();
-  var popover = document.getElementById("popover");
+  const popover = document.getElementById("popover");
   popover.hide();
 };
 
 let nextHelp = 0;
-var nextPopover = function() {
+const nextPopover = function() {
   const currentTarget = helpTargets[nextHelp];
   const target = document.querySelector(currentTarget.target);
   const popover = document.getElementById("popover");
@@ -864,7 +864,7 @@ const searchObj = {
     searchedStatus.innerHTML = `Word: ${searchWord} ..Found: ${
       searchList.length
     }`;
-    var lazySearchedList = document.getElementById("lazy-searched-list");
+    const lazySearchedList = document.getElementById("lazy-searched-list");
     lazySearchedList.delegate = searchObj.getLazySearchDelegate(
       searchWord,
       searchList
@@ -969,10 +969,21 @@ const _favourite_obj = {
   }
 };
 
-let speedDialer;
-function launchSpeedDialer() {
-  speedDialer.toggleItems();
-}
+///////////////////////////menu
+const showMenuDialog = function() {
+  const menuDialog = document.getElementById("menuDialog");
+  menuDialog.show({
+    animation : "slide"
+  });
+};
+
+const hideDialog = function() {
+   const menuDialog = document.getElementById("menuDialog");
+  menuDialog.hide();
+};
+
+/////////////////////////////////////////////////////
+
 
 //////////////////////////
 
@@ -1047,14 +1058,14 @@ const process_bible_data = function() {
   });
 };
 
-//var tag = document.createElement("script");
+//const tag = document.createElement("script");
 //tag.src = `somewhere_else.php?callback=foo`;
 
 //document.getElementsByTagName("head")[0].appendChild(tag);
 
 let _maxWidth; // = $mainPage.offsetWidth;
 ons.ready(function() {
-  //
+     //
   _navigator = document.querySelector("#bible-navigator");
   //manage navigator page switching
   window.addEventListener("resize", function(event) {
@@ -1067,7 +1078,7 @@ ons.ready(function() {
     _currentPageId = event.target.id;
     if (_currentPageId === "mainPage") {
       //align verses
-      speedDialer.hide();
+      hideDialog();
       alignVerses(event.target);
     }
   });
@@ -1076,11 +1087,8 @@ ons.ready(function() {
     const pageData = event.target.data;
     if (_currentPageId === "mainPage") {
       $mainPage = event.target;
-      _maxWidth = $mainPage.offsetWidth;
-
-      //speed dialer
-      speedDialer = document.querySelector("ons-speed-dial");
-      //speedDialer.hide();
+      _maxWidth = $mainPage.offsetWidth;   
+      
 
       //set gesture events
       const $chapter = document.querySelector("#chapter");
@@ -1095,7 +1103,6 @@ ons.ready(function() {
 
       //process english words
       process_bible_data(_englishWords);
-
     } else if (_currentPageId === "bible-selection") {
       //
       _selectedVerseIndex = ILLEGAL_VERSE_NUMBER;
