@@ -16,15 +16,6 @@
   <script src="js/onsenui.js"></script>
   <script src="js/jquery.js"></script>
   <script>
-    let _englishWords = {};
-    function getDict(response) {
-      //console.log("english", response);
-      _englishWords = response;
-    }
-  </script>
-  <script src="https://geneva-bible.cs4rv.com/modern-translation.json?callback=getDict"></script>
-  <script src="index.js"></script>
-  <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("sw.js")
@@ -36,6 +27,15 @@
         });
     }
   </script>
+  <script>
+    let _englishWords = {};
+    function getDict(response) {
+      //console.log("english", response);
+      _englishWords = response;
+    }
+  </script>
+  <script src="https://geneva-bible.cs4rv.com/modern-translation.json?callback=getDict"></script>
+  <script src="index.js"></script>
 </head>
 
 <body>
