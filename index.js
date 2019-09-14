@@ -48,7 +48,7 @@ const STORAGE_ENGLISH_WORDS_KEY = "courserv_english_words_key";
 //storage key for the options
 const STORAGE_OPTIONS_KEY = "courserv_geneva_bible_opts";
 
-String.prototype.replaceAll = function(search, replacement, isSpecial) {
+String.prototype.replaceAll = function (search, replacement, isSpecial) {
   //const target = this;
   let limiter = "\\b";
   if (isSpecial) limiter = "";
@@ -91,25 +91,25 @@ function getOptions() {
   titleSelector.selectedIndex = _m_opts.title ? 0 : 1;
 }
 
-const setOrder = function(e) {
+const setOrder = function (e) {
   _m_opts.order = e.target.selectedIndex === 0;
   setOptions();
   populateBooks(true);
 };
 
-const setTitle = function(e) {
+const setTitle = function (e) {
   _m_opts.title = e.target.selectedIndex === 0;
   setOptions();
   selectBook(_book_index, _chapter_index);
 };
 
-const setVersion = function(e) {
+const setVersion = function (e) {
   _m_opts.version = e.target.selectedIndex;
   setOptions();
   selectBook(_book_index, _chapter_index);
 };
 
-const helpGuideSelector = function(e) {
+const helpGuideSelector = function (e) {
   const idx = e.target.selectedIndex;
   $(".help-options").hide();
   $(".help-options")
@@ -117,14 +117,14 @@ const helpGuideSelector = function(e) {
     .show();
 };
 
-const showHelp = function() {
+const showHelp = function () {
   _m_opts.helpMode = true;
   const messageObj = {
     title: "Help Guide",
     messageHTML: document.querySelector("#helpNotes").innerHTML,
     buttonLabels: ["Cancel", "Next"]
   };
-  ons.notification.confirm(messageObj).then(function(idx) {
+  ons.notification.confirm(messageObj).then(function (idx) {
     _m_opts.helpMode = !!idx;
     setOptions();
     if (idx == 0) return;
@@ -343,7 +343,7 @@ function alignVerses() {
   // we use the "data-adaptheight" attribute as a marker
   const $chapter = $mainPage.querySelector("#chapter");
   const textAreas = [].slice.call($chapter.querySelectorAll("textarea"));
-  textAreas.forEach(function(el) {
+  textAreas.forEach(function (el) {
     //const minHeight = el.scrollHeight;
     const outerHeight = parseInt(window.getComputedStyle(el).height, 10);
     const diff = outerHeight - el.clientHeight;
@@ -374,7 +374,7 @@ function getVersionName() {
 const _favoriteKey = "courserv_geneva_favorite_key";
 const _verseObj = {
   //data : {},
-  addFavourite: function() {
+  addFavourite: function () {
     const favoriteList = localStorage.getItem(_favoriteKey);
     if (favoriteList) {
       _verseObj.favoriteList = JSON.parse(favoriteList);
@@ -399,16 +399,16 @@ const _verseObj = {
     _verseObj.hide();
   },
 
-  trigger: function(e) {
+  trigger: function (e) {
     _verseObj.data = JSON.parse(atob(e.target.getAttribute("data-obj")));
     _verseObj.show();
   },
 
-  preshow: function(e) {
+  preshow: function (e) {
     console.log("_verseObj.preshow", e);
   },
 
-  copyVerse: function() {
+  copyVerse: function () {
     const verseX = _verseObj.data;
     _verseObj.hide();
     // book - version;
@@ -417,17 +417,19 @@ const _verseObj = {
       "//" +
       window.location.host +
       `/?bk=${verseX.book_idx}&ch=${verseX.chapter_idx}&v=${verseX.verse_idx}`;
-    const copiedText = `<a href="${url}">${
-      _books[verseX.book_idx].name
-    } ${verseX.chapter_idx + 1}:${verseX.verse_idx + 1}</a>`;
+
+    /*  const copiedText = `<a href="${url}">${
+     _books[verseX.book_idx].name
+   } ${verseX.chapter_idx + 1}:${verseX.verse_idx + 1}</a>`; */
+
     ons.notification.toast(`Verse: ${verseX.verse_idx + 1} Copied!`, {
       timeout: 2000,
       animation: "fall"
     });
     navigator.clipboard
-      .writeText(copiedText)
+      .writeText(url)
       .then(() => {
-        console.log("copied verse", copiedText);
+        console.log("copied verse", url);
       })
       .catch(err => {
         // This can happen if the user denies clipboard permissions:
@@ -444,7 +446,7 @@ function selectBook(book_index, chapter_index) {
 
   let book_code = _books[_book_index].code;
 
-  const gotoChapter = function() {
+  const gotoChapter = function () {
     if (typeof chapter_index == "number") selectChapter(chapter_index);
     else getChapters();
   };
@@ -452,7 +454,7 @@ function selectBook(book_index, chapter_index) {
   if (book_code === _current_book_code) {
     gotoChapter();
   } else {
-    const get_new_book = function(current_book) {
+    const get_new_book = function (current_book) {
       $loader.hide();
       _current_book_code = book_code;
       _current_book = current_book;
@@ -513,7 +515,7 @@ function populateBooks(selectOrderTriggered) {
   }
 }
 
-const isWrongWordType = function(idx, word) {
+const isWrongWordType = function (idx, word) {
   let firstLetter = word.slice(0, 1);
   const common_idx = 0,
     capital_idx = 1,
@@ -532,7 +534,7 @@ const isWrongWordType = function(idx, word) {
   }
 };
 
-const loadDictionary = function(event) {
+const loadDictionary = function (event) {
   let dictionaryList = [];
   let idx = (event && event.index) || 0;
   for (let word in _englishWords) {
@@ -556,7 +558,7 @@ const loadDictionary = function(event) {
   }
   dictionaryList.sort(compare);
 
-  const rowTemplate = function(cell0, cell1, cell2) {
+  const rowTemplate = function (cell0, cell1, cell2) {
     let cols = [];
     if (cell0) {
       cols.push(`<ons-col width="50px">${cell0}</ons-col>`);
@@ -579,7 +581,7 @@ const loadDictionary = function(event) {
 
   const lazyWordList = document.getElementById("lazy-word-list");
   lazyWordList.delegate = {
-    createItemContent: function(i) {
+    createItemContent: function (i) {
       const itemRow = document.createElement("ons-row");
       const oldWord = dictionaryList[i].old;
       const newWord = dictionaryList[i].new;
@@ -588,11 +590,11 @@ const loadDictionary = function(event) {
 
       return ons.createElement(
         `<ons-list-item modifier="material">${
-          itemRow.outerHTML
+        itemRow.outerHTML
         }</ons-list-item>`
       );
     },
-    countItems: function() {
+    countItems: function () {
       return dictionaryList.length;
     }
   };
@@ -600,12 +602,12 @@ const loadDictionary = function(event) {
 };
 
 //close modal
-const viewDictionary = function() {
+const viewDictionary = function () {
   _navigator.pushPage("words.html").then();
 };
 
 //close modal
-const manageBackButton = function() {
+const manageBackButton = function () {
   if (_currentPageId !== $mainPage.id) {
     const $booklist = document.querySelector("#book-list");
     if ($booklist.style.display === "none") {
@@ -677,7 +679,7 @@ const helpTargets = [
   }
 ];
 
-const hidePopover = function() {
+const hidePopover = function () {
   _m_opts.helpMode = false;
   setOptions();
   const popover = document.getElementById("popover");
@@ -685,7 +687,7 @@ const hidePopover = function() {
 };
 
 let nextHelp = 0;
-const nextPopover = function() {
+const nextPopover = function () {
   const currentTarget = helpTargets[nextHelp];
   const target = document.querySelector(currentTarget.target);
   const popover = document.getElementById("popover");
@@ -719,7 +721,7 @@ function getSavedChapter() {
   }
 }
 
-const gestureListner = function(event) {
+const gestureListner = function (event) {
   switch (event.type) {
     //case "dragleft":
     case "swipeleft":
@@ -741,7 +743,7 @@ const gestureListner = function(event) {
 /// seach Bible ///////////////
 
 const searchObj = {
-  viewSearchPage: function() {
+  viewSearchPage: function () {
     //activate search page
     _navigator.pushPage("searchPage.html"); //, {
     //  data: { searchList: searchList, searchWord: searchWord }
@@ -749,9 +751,9 @@ const searchObj = {
     //.then();
   },
 
-  getLazySearchDelegate: function(searchWord, searchList) {
+  getLazySearchDelegate: function (searchWord, searchList) {
     return {
-      createItemContent: function(i) {
+      createItemContent: function (i) {
         let obj = searchList[i];
         let book = _books[obj.book_idx];
 
@@ -771,7 +773,7 @@ const searchObj = {
           `</span>` +
           `<p>${replaceVerseMarker}</p></div>`;
 
-        (async function() {
+        (async function () {
           try {
             const resp = await fetch(`books/${book.code}.json`);
             let book_chapters = await resp.json();
@@ -805,13 +807,13 @@ const searchObj = {
         })();
         return listItem;
       },
-      countItems: function() {
+      countItems: function () {
         return searchList.length;
       }
     };
   },
 
-  searchBible: async function(e) {
+  searchBible: async function (e) {
     //document.querySelector("#searchedStatus").innerText = "Search Results..";
     let searchList = [];
     const searchWord = e.target.value;
@@ -863,7 +865,7 @@ const searchObj = {
     const searchedStatus = document.querySelector("#searchedStatus");
     searchedStatus.innerHTML = `Word: ${searchWord} ..Found: ${
       searchList.length
-    }`;
+      }`;
     const lazySearchedList = document.getElementById("lazy-searched-list");
     lazySearchedList.delegate = searchObj.getLazySearchDelegate(
       searchWord,
@@ -880,10 +882,10 @@ const searchObj = {
 ////////////////////////
 
 const _favourite_obj = {
-  viewFavourite: function() {
+  viewFavourite: function () {
     _navigator.pushPage("favouritePage.html").then();
   },
-  initFavourite: function() {
+  initFavourite: function () {
     const listEl = document.querySelector("#favoriteList");
     const favoriteStr = localStorage.getItem(_favoriteKey);
     const favoriteList = favoriteStr ? JSON.parse(favoriteStr) : [];
@@ -913,7 +915,7 @@ const _favourite_obj = {
       );
     }
   },
-  gotoVerse: function(e) {
+  gotoVerse: function (e) {
     let node = e.target;
     let i = 0;
     while (node.tagName !== "ONS-LIST-ITEM" && i < 10) {
@@ -943,7 +945,7 @@ const _favourite_obj = {
       }
     }
   },
-  deleteFavourite: function(e) {
+  deleteFavourite: function (e) {
     let node = e.target;
     let i = 0;
     while (node.tagName !== "ONS-LIST-ITEM" && i < 10) {
@@ -970,15 +972,15 @@ const _favourite_obj = {
 };
 
 ///////////////////////////menu
-const showMenuDialog = function() {
+const showMenuDialog = function () {
   const menuDialog = document.getElementById("menuDialog");
   menuDialog.show({
-    animation : "slide"
+    animation: "slide"
   });
 };
 
-const hideDialog = function() {
-   const menuDialog = document.getElementById("menuDialog");
+const hideDialog = function () {
+  const menuDialog = document.getElementById("menuDialog");
   menuDialog.hide();
 };
 
@@ -987,7 +989,7 @@ const hideDialog = function() {
 
 //////////////////////////
 
-const process_bible_data = function() {
+const process_bible_data = function () {
   try {
     if (_englishWords && typeof _englishWords === "object") {
       //save downloaded words  ---this is not cached.
@@ -1006,12 +1008,12 @@ const process_bible_data = function() {
     _englishWords = {};
   }
 
-  $.get("books_complete.json", function(books) {
+  $.get("books_complete.json", function (books) {
     $loader.hide();
     getOptions();
     _books = books;
     $bookSelector = document.querySelector("#book-selector");
-    $bookSelector.addEventListener("click", function(e) {
+    $bookSelector.addEventListener("click", function (e) {
       _navigator
         .pushPage("bible-selection.html", {
           data: { type: "book" }
@@ -1021,7 +1023,7 @@ const process_bible_data = function() {
     const $chapSelector = document.querySelector("#chapter-selector");
 
     //Event listener for Chapter selector
-    $chapSelector.addEventListener("click", function(e) {
+    $chapSelector.addEventListener("click", function (e) {
       _navigator
         .pushPage("bible-selection.html", {
           data: { type: "chapter" }
@@ -1048,12 +1050,12 @@ const process_bible_data = function() {
     //create verse options action sheet
     ons
       .createElement("verse-options.html", { append: true })
-      .then(function(sheet) {
+      .then(function (sheet) {
         _verseObj.show = sheet.show.bind(sheet);
         _verseObj.hide = sheet.hide.bind(sheet);
         sheet.addEventListener("preshow", _verseObj.preshow);
       });
-  }).fail(function() {
+  }).fail(function () {
     ons.notification.alert("Network Problem Detected!");
   });
 };
@@ -1064,17 +1066,17 @@ const process_bible_data = function() {
 //document.getElementsByTagName("head")[0].appendChild(tag);
 
 let _maxWidth; // = $mainPage.offsetWidth;
-ons.ready(function() {
-     //
+ons.ready(function () {
+  //
   _navigator = document.querySelector("#bible-navigator");
   //manage navigator page switching
-  window.addEventListener("resize", function(event) {
+  window.addEventListener("resize", function (event) {
     if (_currentPageId === "mainPage") {
       _maxWidth = $mainPage.offsetWidth;
       selectBook(_book_index, _chapter_index);
     }
   });
-  document.addEventListener("show", function(event) {
+  document.addEventListener("show", function (event) {
     _currentPageId = event.target.id;
     if (_currentPageId === "mainPage") {
       //align verses
@@ -1082,13 +1084,13 @@ ons.ready(function() {
       alignVerses(event.target);
     }
   });
-  document.addEventListener("init", function(event) {
+  document.addEventListener("init", function (event) {
     _currentPageId = event.target.id;
     const pageData = event.target.data;
     if (_currentPageId === "mainPage") {
       $mainPage = event.target;
-      _maxWidth = $mainPage.offsetWidth;   
-      
+      _maxWidth = $mainPage.offsetWidth;
+
 
       //set gesture events
       const $chapter = document.querySelector("#chapter");
