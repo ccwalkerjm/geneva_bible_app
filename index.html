@@ -16,8 +16,12 @@
   <script src="js/onsenui.js"></script>
   <script src="js/jquery.js"></script>
   <script>
+    navigator.serviceWorker.addEventListener('message', event => {
+      console.log(event.data.msg, event.data.url);
+    });
+    let _serviceWorkerContainer;
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
+      _serviceWorkerContainer = navigator.serviceWorker
         .register("sw.js")
         .then(function () {
           console.log("Service Worker Registered");

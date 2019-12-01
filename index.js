@@ -22,11 +22,11 @@ const _ignoreSacredPhrases = {
 let _currentPageId;
 let _navigator;
 //main page
-let $mainPage;
+let _mainPage;
 
-//key components
-let $bookSelector;
-let $loader;
+//key compo$nents
+let _bookSelector;
+let _loader;
 
 const ILLEGAL_VERSE_NUMBER = -1;
 //bible variables
@@ -273,8 +273,8 @@ function selectChapter(index) {
   _chapter_index = index || 0; //_chapter_index;
   _selectedVerseItem = null;
   //set book title
-  const $bookSelector = document.querySelector("#book-selector");
-  $bookSelector.innerHTML = _m_opts.title
+  const _bookSelector = document.querySelector("#book-selector");
+  _bookSelector.innerHTML = _m_opts.title
     ? _books[_book_index].name
     : _books[_book_index].abbreviation;
 
@@ -322,7 +322,7 @@ function selectChapter(index) {
   }
   _previous_book_chapter = getSavedChapter();
   saveChapter();
-  if (_currentPageId !== $mainPage.id) _navigator.popPage();
+  if (_currentPageId !== _mainPage.id) _navigator.popPage();
   else alignVerses();
 }
 
@@ -338,10 +338,10 @@ function alignVerses() {
 
   //scrolling action
   if (_selectedVerseItem) _selectedVerseItem.scrollIntoView();
-  else if (!isSameChapter) $mainPage.scrollTop = 0;
+  else if (!isSameChapter) _mainPage.scrollTop = 0;
 
   // we use the "data-adaptheight" attribute as a marker
-  const $chapter = $mainPage.querySelector("#chapter");
+  const $chapter = _mainPage.querySelector("#chapter");
   const textAreas = [].slice.call($chapter.querySelectorAll("textarea"));
   textAreas.forEach(function (el) {
     //const minHeight = el.scrollHeight;
@@ -455,13 +455,13 @@ function selectBook(book_index, chapter_index) {
     gotoChapter();
   } else {
     const get_new_book = function (current_book) {
-      $loader.hide();
+      _loader.hide();
       _current_book_code = book_code;
       _current_book = current_book;
       gotoChapter();
     };
-    $loader.querySelector("p#loader-text").innerHTML = "..Loading Bible Book..";
-    $loader.show();
+    _loader.querySelector("p#loader-text").innerHTML = "..Loading Bible Book..";
+    _loader.show();
     $.get(`books/${book_code}.json`, get_new_book);
   }
 }
@@ -608,7 +608,7 @@ const viewDictionary = function () {
 
 //close modal
 const manageBackButton = function () {
-  if (_currentPageId !== $mainPage.id) {
+  if (_currentPageId !== _mainPage.id) {
     const $booklist = document.querySelector("#book-list");
     if ($booklist.style.display === "none") {
       populateBooks();
@@ -818,9 +818,9 @@ const searchObj = {
     let searchList = [];
     const searchWord = e.target.value;
     if (searchWord.trim().length === 0) return;
-    $loader.querySelector("p#loader-text").innerHTML =
+    _loader.querySelector("p#loader-text").innerHTML =
       "..Searching Entire Bible..";
-    $loader.show();
+    _loader.show();
     for (let book_idx = 0; book_idx < _books.length; book_idx++) {
       const book_code = _books[book_idx].code;
 
@@ -854,7 +854,7 @@ const searchObj = {
       }
     }
     //console.log(searchList);
-    $loader.hide();
+    _loader.hide();
 
     if (searchList.length === 0) {
       ons.notification.alert("No Result Found!!");
@@ -1009,11 +1009,11 @@ const process_bible_data = function () {
   }
 
   $.get("books_complete.json", function (books) {
-    $loader.hide();
+    _loader.hide();
     getOptions();
     _books = books;
-    $bookSelector = document.querySelector("#book-selector");
-    $bookSelector.addEventListener("click", function (e) {
+    _bookSelector = document.querySelector("#book-selector");
+    _bookSelector.addEventListener("click", function (e) {
       _navigator
         .pushPage("bible-selection.html", {
           data: { type: "book" }
@@ -1065,14 +1065,14 @@ const process_bible_data = function () {
 
 //document.getElementsByTagName("head")[0].appendChild(tag);
 
-let _maxWidth; // = $mainPage.offsetWidth;
+let _maxWidth; // = _mainPage.offsetWidth;
 ons.ready(function () {
   //
   _navigator = document.querySelector("#bible-navigator");
   //manage navigator page switching
   window.addEventListener("resize", function (event) {
     if (_currentPageId === "mainPage") {
-      _maxWidth = $mainPage.offsetWidth;
+      _maxWidth = _mainPage.offsetWidth;
       selectBook(_book_index, _chapter_index);
     }
   });
@@ -1088,8 +1088,8 @@ ons.ready(function () {
     _currentPageId = event.target.id;
     const pageData = event.target.data;
     if (_currentPageId === "mainPage") {
-      $mainPage = event.target;
-      _maxWidth = $mainPage.offsetWidth;
+      _mainPage = event.target;
+      _maxWidth = _mainPage.offsetWidth;
 
 
       //set gesture events
@@ -1098,10 +1098,10 @@ ons.ready(function () {
       chapterGesture.on("swiperight swipeleft doubletap", gestureListner);
 
       //load bible Meta json
-      $loader = document.querySelector("#loader");
-      $loader.querySelector("p#loader-text").innerHTML =
+      _loader = document.querySelector("#loader");
+      _loader.querySelector("p#loader-text").innerHTML =
         "..Loading Bible Meta Data..";
-      $loader.show();
+      _loader.show();
 
       //process english words
       process_bible_data(_englishWords);

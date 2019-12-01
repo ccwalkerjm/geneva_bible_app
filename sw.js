@@ -2,54 +2,70 @@
 // The "install" event is called when the ServiceWorker starts up.
 // All ServiceWorker code must be inside events.
 self.addEventListener('install', function (e) {
-    console.log('install');
+    console.log('install', e);
 
     // waitUntil tells the browser that the install event is not finished until we have
     // cached all of our files
     e.waitUntil(
         // Here we call our cache "myonsenuipwa", but you can name it anything unique
-        caches.open('genevabibleAssets').then(cache => {
+        caches.open(cacheName).then(cache => {
             // If the request for any of these resources fails, _none_ of the resources will be
             // added to the cache.
-            return cache.addAll([
-                '/',
-                'index.html',
-                'index.css',
-                'index.js',
-                'images/logo16.png',
-                'images/logo32.png',
-                'images/logo512.png',
-                'images/logo192.png',
-                'books_complete.json',
-                'manifest.json',
-                'js/jquery.js',
-                'js/onsenui.js',
-                'css/onsenui.css',
-                'css/onsen-css-components.css',
-                'css/ionicons/css/ionicons.min.css',
-                'css/font_awesome/css/font-awesome.min.css',
-                'css/font_awesome/css/v4-shims.min.css',
-                'css/material-design-iconic-font/css/material-design-iconic-font.min.css',
-                'css/material-design-iconic-font/fonts/Material-Design-Iconic-Font.woff2',
-                'css/material-design-iconic-font/fonts/Material-Design-Iconic-Font.woff',
-                'css/material-design-iconic-font/fonts/Material-Design-Iconic-Font.ttf'
-            ].concat(bible_data));
+            return cache.addAll([].concat(bible_data, bible_scripts));
         })
     );
 });
 
+let client;
 // 2. Intercept requests and return the cached version instead
 self.addEventListener('fetch', function (e) {
-    e.respondWith(
+    // Get the client.
+    (async () => {
+        if (!client) client = await clients.get(e.clientId);
+        // Exit early if we don't get the client.
+        // Eg, if it closed.
+        if (!client) return;
+        console.log("serviuce workier", e.request.url);
+        // Send a message to the client.
+        client.postMessage({
+            msg: "Hey I just got a fetch from you!",
+            url: e.request.url
+        });
+
         // check if this file exists in the cache
-        caches.match(e.request)
+        const response = await caches.match(e.request);
         // Return the cached file, or else try to get it from the server
-        .then(response => response || fetch(e.request))
-    );
+        const data = response || (await fetch(e.request));
+
+        await e.respondWith(data);
+    })();
 });
 
+const cacheName = "c4rv-geneva-bible-assets";
 
-
+const bible_scripts = [
+    '/',
+    'index.html',
+    'index.css',
+    'index.js',
+    'images/logo16.png',
+    'images/logo32.png',
+    'images/logo512.png',
+    'images/logo192.png',
+    'books_complete.json',
+    'manifest.json',
+    'js/jquery.js',
+    'js/onsenui.js',
+    'css/onsenui.css',
+    'css/onsen-css-components.css',
+    'css/ionicons/css/ionicons.min.css',
+    'css/font_awesome/css/font-awesome.min.css',
+    'css/font_awesome/css/v4-shims.min.css',
+    'css/material-design-iconic-font/css/material-design-iconic-font.min.css',
+    'css/material-design-iconic-font/fonts/Material-Design-Iconic-Font.woff2',
+    'css/material-design-iconic-font/fonts/Material-Design-Iconic-Font.woff',
+    'css/material-design-iconic-font/fonts/Material-Design-Iconic-Font.ttf'
+];
 
 const bible_data = [
     "books/GEN.json", //Genesis
